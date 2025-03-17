@@ -4,14 +4,11 @@ export const metadata: Metadata = {
   title: 'My Faithful Assistant',
   description: 'Build your own assistant in a few seconds.',
 
-  keywords: ['Web3', 'Next.js', 'Ethereum', 'DApp', 'Blockchain', 'Wallet'],
-  authors: [{ name: 'Julien', url: 'https://github.com/julienbrg' }],
-
   openGraph: {
     title: 'My Faithful Assistant',
     description: 'Build your own assistant in a few seconds.',
-    url: 'https://rukh-ui.netlify.app',
-    siteName: 'Rukh AI',
+    url: 'https://rukh-ui.netlify.app/create',
+    siteName: 'My Faithful Assistant',
     images: [
       {
         url: '/huangshan.png',
@@ -29,22 +26,9 @@ export const metadata: Metadata = {
     title: 'My Faithful Assistant',
     description: 'Build your own assistant in a few seconds.',
     images: ['/huangshan.png'],
-    creator: '@julienbrg',
   },
+}
 
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-
-  verification: {
-    google: 'your-google-site-verification',
-  },
+export default function CreateLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }
