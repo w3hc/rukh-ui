@@ -23,21 +23,13 @@ type TranslationKeys = {
     notConnected: string
     insufficientBalance: string
   }
-  wallet: {
+  chat: {
     title: string
-    description: string
-    noWalletFound: string
-    createWallet: string
-    regenerateWallet: string
-    flushDb: string
-    yourAddress: string
-    messageToSign: string
-    enterMessage: string
-    signMessage: string
-    signature: string
-    verifySignature: string
-    verificationSuccess: string
-    verificationFailed: string
+    welcomeMessage: string
+    inputPlaceholder: string
+    sendButton: string
+    errorMessage: string
+    rateLimitMessage: string
   }
   navigation: {
     newPage: string
@@ -79,21 +71,15 @@ export const translations: Translations = {
       notConnected: 'Please connect your wallet',
       insufficientBalance: 'Please connect with an account that has a bit of ETH',
     },
-    wallet: {
-      title: 'Welcome to Message Signer',
-      description: 'Securely sign and verify Ethereum messages with your wallet',
-      noWalletFound: 'No Ethereum Wallet Found',
-      createWallet: 'Create New Ethereum Wallet',
-      regenerateWallet: 'Generate New Wallet',
-      flushDb: 'Flush DB',
-      yourAddress: 'Your Ethereum Wallet Address',
-      messageToSign: 'Message to Sign',
-      enterMessage: 'Enter your message...',
-      signMessage: 'Sign Message',
-      signature: 'Ethereum Signature',
-      verifySignature: 'Verify Signature',
-      verificationSuccess: 'Signature is valid and matches the current wallet address',
-      verificationFailed: 'Signature does not match the current wallet address',
+    chat: {
+      title: 'Chat with Assistant',
+      welcomeMessage:
+        "Hello! I'm Francesca, Julien's faithful assistant. What do you need to know about him?",
+      inputPlaceholder: 'Can Julien help me build an app or API?',
+      sendButton: 'Send',
+      errorMessage:
+        'Sorry, there was an error processing your request. Please try again a bit later.',
+      rateLimitMessage: 'Sorry, you reached the limit. Please come back in one hour.',
     },
     navigation: {
       newPage: 'New page',
@@ -129,21 +115,13 @@ export const translations: Translations = {
       notConnected: '请连接您的钱包',
       insufficientBalance: '请使用拥有一些 ETH 的账户连接',
     },
-    wallet: {
-      title: '欢迎使用消息签名器',
-      description: '使用您的钱包安全地签名和验证以太坊消息',
-      noWalletFound: '未找到以太坊钱包',
-      createWallet: '创建新的以太坊钱包',
-      regenerateWallet: '生成新钱包',
-      flushDb: '清空数据库',
-      yourAddress: '您的以太坊钱包地址',
-      messageToSign: '要签名的消息',
-      enterMessage: '输入您的消息...',
-      signMessage: '签名消息',
-      signature: '以太坊签名',
-      verifySignature: '验证签名',
-      verificationSuccess: '签名有效并匹配当前钱包地址',
-      verificationFailed: '签名与当前钱包地址不匹配',
+    chat: {
+      title: '与助手对话',
+      welcomeMessage: '你好！我是Francesca，Julien的忠实助手。你想了解他的什么？',
+      inputPlaceholder: 'Julien能帮我开发应用或API吗？',
+      sendButton: '发送',
+      errorMessage: '抱歉，处理您的请求时出错。请稍后再试。',
+      rateLimitMessage: '抱歉，您已达到限制。请一小时后再来。',
     },
     navigation: {
       newPage: '新页面',
@@ -179,21 +157,15 @@ export const translations: Translations = {
       notConnected: 'कृपया अपना वॉलेट कनेक्ट करें',
       insufficientBalance: 'कृपया ऐसे खाते से कनेक्ट करें जिसमें थोड़ा ETH हो',
     },
-    wallet: {
-      title: 'मैसेज साइनर में आपका स्वागत है',
-      description: 'अपने वॉलेट से ईथेरियम संदेशों को सुरक्षित रूप से साइन और सत्यापित करें',
-      noWalletFound: 'कोई ईथेरियम वॉलेट नहीं मिला',
-      createWallet: 'नया ईथेरियम वॉलेट बनाएं',
-      regenerateWallet: 'नया वॉलेट जनरेट करें',
-      flushDb: 'डीबी खाली करें',
-      yourAddress: 'आपका ईथेरियम वॉलेट पता',
-      messageToSign: 'साइन करने के लिए संदेश',
-      enterMessage: 'अपना संदेश दर्ज करें...',
-      signMessage: 'संदेश साइन करें',
-      signature: 'ईथेरियम सिग्नेचर',
-      verifySignature: 'सिग्नेचर वेरिफाई करें',
-      verificationSuccess: 'सिग्नेचर वैध है और वर्तमान वॉलेट पते से मेल खाता है',
-      verificationFailed: 'सिग्नेचर वर्तमान वॉलेट पते से मेल नहीं खाता',
+    chat: {
+      title: 'सहायक से चैट करें',
+      welcomeMessage:
+        'नमस्ते! मैं Francesca हूँ, Julien की विश्वसनीय सहायक। आप उनके बारे में क्या जानना चाहते हैं?',
+      inputPlaceholder: 'क्या Julien मुझे ऐप या API बनाने में मदद कर सकते हैं?',
+      sendButton: 'भेजें',
+      errorMessage:
+        'क्षमा करें, आपके अनुरोध को संसाधित करने में एक त्रुटि हुई। कृपया थोड़ी देर बाद फिर से प्रयास करें।',
+      rateLimitMessage: 'क्षमा करें, आप सीमा तक पहुंच गए हैं। कृपया एक घंटे बाद वापस आएं।',
     },
     navigation: {
       newPage: 'नया पेज',
@@ -229,21 +201,15 @@ export const translations: Translations = {
       notConnected: 'Por favor conecte su billetera',
       insufficientBalance: 'Por favor conecte con una cuenta que tenga un poco de ETH',
     },
-    wallet: {
-      title: 'Bienvenido al Firmador de Mensajes',
-      description: 'Firme y verifique mensajes de Ethereum de forma segura con su billetera',
-      noWalletFound: 'No se encontró ninguna billetera Ethereum',
-      createWallet: 'Crear nueva billetera Ethereum',
-      regenerateWallet: 'Generar nueva billetera',
-      flushDb: 'Vaciar BD',
-      yourAddress: 'Su dirección de billetera Ethereum',
-      messageToSign: 'Mensaje para firmar',
-      enterMessage: 'Ingrese su mensaje...',
-      signMessage: 'Firmar mensaje',
-      signature: 'Firma Ethereum',
-      verifySignature: 'Verificar firma',
-      verificationSuccess: 'La firma es válida y coincide con la dirección de la billetera actual',
-      verificationFailed: 'La firma no coincide con la dirección de la billetera actual',
+    chat: {
+      title: 'Chatear con el asistente',
+      welcomeMessage:
+        '¡Hola! Soy Francesca, la fiel asistente de Julien. ¿Qué necesitas saber sobre él?',
+      inputPlaceholder: '¿Puede Julien ayudarme a construir una aplicación o API?',
+      sendButton: 'Enviar',
+      errorMessage:
+        'Lo siento, hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.',
+      rateLimitMessage: 'Lo siento, has alcanzado el límite. Por favor, vuelve en una hora.',
     },
     navigation: {
       newPage: 'Nueva página',
@@ -279,21 +245,15 @@ export const translations: Translations = {
       notConnected: 'Veuillez connecter votre wallet',
       insufficientBalance: "Veuillez vous connecter avec un compte qui possède un peu d'ETH",
     },
-    wallet: {
-      title: 'Bienvenue sur le Signataire de Messages',
-      description: 'Signez et vérifiez en toute sécurité des messages Ethereum avec votre wallet',
-      noWalletFound: 'Aucun wallet',
-      createWallet: 'Créer un Nouveau wallet Ethereum',
-      regenerateWallet: 'Générer un nouveau wallet',
-      flushDb: 'Vider la BD',
-      yourAddress: 'Votre adresse Ethereum',
-      messageToSign: 'Message à signer',
-      enterMessage: 'Entrez votre message...',
-      signMessage: 'Signer le mlessage',
-      signature: 'Signature',
-      verifySignature: 'Vérifier la signature',
-      verificationSuccess: 'La signature est valide et correspond à ce wallet',
-      verificationFailed: 'La signature ne correspond pas à ce wallet',
+    chat: {
+      title: "Discuter avec l'assistant",
+      welcomeMessage:
+        'Bonjour ! Je suis Francesca, la fidèle assistante de Julien. Que souhaitiez-vous savoir ?',
+      inputPlaceholder: "Julien peut-il m'aider à créer une application ou une API ?",
+      sendButton: 'Envoyer',
+      errorMessage:
+        "Désolé, une erreur s'est produite lors du traitement de votre demande. Veuillez réessayer un peu plus tard.",
+      rateLimitMessage: 'Désolé, vous avez atteint la limite. Veuillez revenir dans une heure.',
     },
     navigation: {
       newPage: 'Nouvelle page',
@@ -329,21 +289,13 @@ export const translations: Translations = {
       notConnected: 'يرجى توصيل محفظتك',
       insufficientBalance: 'يرجى الاتصال بحساب يحتوي على قليل من ETH',
     },
-    wallet: {
-      title: 'مرحبًا بك في موقع توقيع الرسائل',
-      description: 'قم بتوقيع رسائل إيثريوم والتحقق منها بشكل آمن باستخدام محفظتك',
-      noWalletFound: 'لم يتم العثور على محفظة إيثريوم',
-      createWallet: 'إنشاء محفظة إيثريوم جديدة',
-      regenerateWallet: 'إنشاء محفظة جديدة',
-      flushDb: 'مسح قاعدة البيانات',
-      yourAddress: 'عنوان محفظة الإيثريوم الخاصة بك',
-      messageToSign: 'رسالة للتوقيع',
-      enterMessage: 'أدخل رسالتك...',
-      signMessage: 'توقيع الرسالة',
-      signature: 'توقيع الإيثريوم',
-      verifySignature: 'التحقق من التوقيع',
-      verificationSuccess: 'التوقيع صالح ويتطابق مع عنوان المحفظة الحالي',
-      verificationFailed: 'التوقيع لا يتطابق مع عنوان المحفظة الحالي',
+    chat: {
+      title: 'الدردشة مع المساعد',
+      welcomeMessage: 'مرحبًا! أنا فرانشيسكا، مساعدة جوليان المخلصة. ماذا تريد أن تعرف عنه؟',
+      inputPlaceholder: 'هل يمكن لجوليان مساعدتي في بناء تطبيق أو واجهة برمجة تطبيقات؟',
+      sendButton: 'إرسال',
+      errorMessage: 'عذرًا، حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى لاحقًا.',
+      rateLimitMessage: 'عذرًا، لقد وصلت إلى الحد. يرجى العودة بعد ساعة واحدة.',
     },
     navigation: {
       newPage: 'صفحة جديدة',
@@ -379,21 +331,15 @@ export const translations: Translations = {
       notConnected: 'অনুগ্রহ করে আপনার ওয়ালেট সংযুক্ত করুন',
       insufficientBalance: 'অনুগ্রহ করে এমন একটি অ্যাকাউন্টের সাথে সংযোগ করুন যার কিছু ETH আছে',
     },
-    wallet: {
-      title: 'মেসেজ সাইনারে স্বাগতম',
-      description: 'আপনার ওয়ালেট দিয়ে নিরাপদে ইথেরিয়াম বার্তা স্বাক্ষর এবং যাচাই করুন',
-      noWalletFound: 'কোনও ইথেরিয়াম ওয়ালেট পাওয়া যায়নি',
-      createWallet: 'নতুন ইথেরিয়াম ওয়ালেট তৈরি করুন',
-      regenerateWallet: 'নতুন ওয়ালেট তৈরি করুন',
-      flushDb: 'ডাটাবেস খালি করুন',
-      yourAddress: 'আপনার ইথেরিয়াম ওয়ালেট ঠিকানা',
-      messageToSign: 'স্বাক্ষর করার বার্তা',
-      enterMessage: 'আপনার বার্তা লিখুন...',
-      signMessage: 'বার্তা স্বাক্ষর করুন',
-      signature: 'ইথেরিয়াম স্বাক্ষর',
-      verifySignature: 'স্বাক্ষর যাচাই করুন',
-      verificationSuccess: 'স্বাক্ষর বৈধ এবং বর্তমান ওয়ালেট ঠিকানার সাথে মেলে',
-      verificationFailed: 'স্বাক্ষর বর্তমান ওয়ালেট ঠিকানার সাথে মেলে না',
+    chat: {
+      title: 'সহকারীর সাথে চ্যাট করুন',
+      welcomeMessage:
+        'হ্যালো! আমি ফ্রান্চেস্কা, জুলিয়েনের বিশ্বস্ত সহকারী। আপনি তার সম্পর্কে কী জানতে চান?',
+      inputPlaceholder: 'জুলিয়েন কি আমাকে অ্যাপ বা API তৈরি করতে সাহায্য করতে পারেন?',
+      sendButton: 'পাঠান',
+      errorMessage:
+        'দুঃখিত, আপনার অনুরোধ প্রক্রিয়া করতে একটি ত্রুটি হয়েছে। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।',
+      rateLimitMessage: 'দুঃখিত, আপনি সীমা পৌঁছে গেছেন। অনুগ্রহ করে এক ঘন্টা পরে আবার আসুন।',
     },
     navigation: {
       newPage: 'নতুন পৃষ্ঠা',
@@ -429,22 +375,14 @@ export const translations: Translations = {
       notConnected: 'Пожалуйста, подключите ваш кошелек',
       insufficientBalance: 'Пожалуйста, подключитесь с аккаунтом, на котором есть немного ETH',
     },
-    wallet: {
-      title: 'Добро пожаловать в Подписчик сообщений',
-      description:
-        'Безопасно подписывайте и проверяйте сообщения Ethereum с помощью вашего кошелька',
-      noWalletFound: 'Кошелек Ethereum не найден',
-      createWallet: 'Создать новый кошелек Ethereum',
-      regenerateWallet: 'Сгенерировать новый кошелек',
-      flushDb: 'Очистить БД',
-      yourAddress: 'Адрес вашего кошелька Ethereum',
-      messageToSign: 'Сообщение для подписи',
-      enterMessage: 'Введите ваше сообщение...',
-      signMessage: 'Подписать сообщение',
-      signature: 'Подпись Ethereum',
-      verifySignature: 'Проверить подпись',
-      verificationSuccess: 'Подпись действительна и соответствует текущему адресу кошелька',
-      verificationFailed: 'Подпись не соответствует текущему адресу кошелька',
+    chat: {
+      title: 'Чат с ассистентом',
+      welcomeMessage: 'Привет! Я Франческа, верный помощник Жюльена. Что вы хотите узнать о нём?',
+      inputPlaceholder: 'Может ли Жюльен помочь мне создать приложение или API?',
+      sendButton: 'Отправить',
+      errorMessage:
+        'Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.',
+      rateLimitMessage: 'Извините, вы достигли лимита. Пожалуйста, вернитесь через час.',
     },
     navigation: {
       newPage: 'Новая страница',
@@ -480,21 +418,15 @@ export const translations: Translations = {
       notConnected: 'Por favor, conecte sua carteira',
       insufficientBalance: 'Por favor, conecte-se com uma conta que tenha um pouco de ETH',
     },
-    wallet: {
-      title: 'Bem-vindo ao Assinador de Mensagens',
-      description: 'Assine e verifique mensagens Ethereum com segurança usando sua carteira',
-      noWalletFound: 'Nenhuma carteira Ethereum encontrada',
-      createWallet: 'Criar nova carteira Ethereum',
-      regenerateWallet: 'Gerar nova carteira',
-      flushDb: 'Limpar BD',
-      yourAddress: 'Seu endereço de carteira Ethereum',
-      messageToSign: 'Mensagem para assinar',
-      enterMessage: 'Digite sua mensagem...',
-      signMessage: 'Assinar mensagem',
-      signature: 'Assinatura Ethereum',
-      verifySignature: 'Verificar assinatura',
-      verificationSuccess: 'A assinatura é válida e corresponde ao endereço da carteira atual',
-      verificationFailed: 'A assinatura não corresponde ao endereço da carteira atual',
+    chat: {
+      title: 'Conversar com o assistente',
+      welcomeMessage:
+        'Olá! Sou Francesca, a assistente fiel do Julien. O que você precisa saber sobre ele?',
+      inputPlaceholder: 'O Julien pode me ajudar a construir um aplicativo ou API?',
+      sendButton: 'Enviar',
+      errorMessage:
+        'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.',
+      rateLimitMessage: 'Desculpe, você atingiu o limite. Por favor, volte em uma hora.',
     },
     navigation: {
       newPage: 'Nova página',
@@ -530,21 +462,15 @@ export const translations: Translations = {
       notConnected: 'براہ کرم اپنا والیٹ منسلک کریں',
       insufficientBalance: 'براہ کرم ایسے اکاؤنٹ سے منسلک ہوں جس میں تھوڑا سا ETH ہو',
     },
-    wallet: {
-      title: 'میسج سائنر میں خوش آمدید',
-      description: 'اپنے والیٹ سے محفوظ طریقے سے ایتھیریم پیغامات پر دستخط کریں اور تصدیق کریں',
-      noWalletFound: 'کوئی ایتھیریم والیٹ نہیں ملا',
-      createWallet: 'نیا ایتھیریم والیٹ بنائیں',
-      regenerateWallet: 'نیا والیٹ بنائیں',
-      flushDb: 'ڈیٹابیس خالی کریں',
-      yourAddress: 'آپ کا ایتھیریم والیٹ ایڈریس',
-      messageToSign: 'دستخط کرنے کے لیے پیغام',
-      enterMessage: 'اپنا پیغام درج کریں...',
-      signMessage: 'پیغام پر دستخط کریں',
-      signature: 'ایتھیریم دستخط',
-      verifySignature: 'دستخط کی تصدیق کریں',
-      verificationSuccess: 'دستخط درست ہے اور موجودہ والیٹ ایڈریس سے مطابقت رکھتا ہے',
-      verificationFailed: 'دستخط موجودہ والیٹ ایڈریس سے مطابقت نہیں رکھتا',
+    chat: {
+      title: 'اسسٹنٹ سے چیٹ کریں',
+      welcomeMessage:
+        'ہیلو! میں فرانچیسکا ہوں، جولین کی وفادار اسسٹنٹ۔ آپ اس کے بارے میں کیا جاننا چاہتے ہیں؟',
+      inputPlaceholder: 'کیا جولین مجھے ایپ یا API بنانے میں مدد کر سکتا ہے؟',
+      sendButton: 'بھیجیں',
+      errorMessage:
+        'معذرت، آپ کی درخواست پر کارروائی کرتے ہوئے ایک خرابی پیش آئی۔ براہ کرم کچھ دیر بعد دوبارہ کوشش کریں۔',
+      rateLimitMessage: 'معذرت، آپ حد تک پہنچ گئے ہیں۔ براہ کرم ایک گھنٹے بعد واپس آئیں۔',
     },
     navigation: {
       newPage: 'نیا صفحہ',

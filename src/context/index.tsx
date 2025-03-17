@@ -51,9 +51,9 @@ createAppKit({
   ],
   defaultNetwork: sepolia,
   metadata: {
-    name: 'Genji',
-    description: 'Next.js + Web3 Modal + Ethers.js + Chakra UI',
-    url: 'https://genji-app.netlify.app',
+    name: 'My Faithful Assistant',
+    description: 'Build your own assistant in a few seconds.',
+    url: 'https://rukh-ui.netlify.app',
     icons: ['./favicon.ico'],
   },
   enableEIP6963: true,

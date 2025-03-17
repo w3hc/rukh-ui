@@ -69,7 +69,7 @@ export default function Header() {
         >
           <Link href="/">
             <Heading as="h3" size="md" textAlign="center">
-              Genji
+              Rukh
             </Heading>
           </Link>
         </Box>
@@ -121,11 +121,11 @@ export default function Header() {
               size="sm"
             />
             <MenuList>
-              <Link href="/new" color="white">
-                <MenuItem fontSize="md">{t.navigation.newPage}</MenuItem>
+              <Link href="/create" color="white">
+                <MenuItem fontSize="sm">Create</MenuItem>
               </Link>
-              <Link href="/wallet" color="white">
-                <MenuItem fontSize="md">{t.navigation.walletGenerator}</MenuItem>
+              <Link href="/chat" color="white">
+                <MenuItem fontSize="sm">Chat</MenuItem>
               </Link>
             </MenuList>
           </Menu>
