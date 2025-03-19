@@ -124,8 +124,8 @@ export default function Header() {
               <Link href="/create" color="white">
                 <MenuItem fontSize="sm">Create</MenuItem>
               </Link>
-              <Link href="/chat" color="white">
-                <MenuItem fontSize="sm">Chat</MenuItem>
+              <Link href="/aeve" color="white">
+                <MenuItem fontSize="sm">Cover letter</MenuItem>
               </Link>
             </MenuList>
           </Menu>
