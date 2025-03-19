@@ -182,12 +182,10 @@ export default function AevePage() {
         setResumeContent(data.text)
       } catch (error) {
         console.error('Error converting PDF:', error)
-        setFileProcessingError(
-          'Could not process PDF file. Please try uploading a text-based resume.'
-        )
+        setFileProcessingError(t.aeve.errors.convertError)
         toast({
-          title: 'File Processing Error',
-          description: 'Could not convert the PDF. Please try a text format instead.',
+          title: t.aeve.errors.fileProcessingError,
+          description: t.aeve.errors.convertError,
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -199,10 +197,10 @@ export default function AevePage() {
     }
 
     // For unsupported file types
-    setFileProcessingError('Unsupported file format. Please upload a PDF, TXT, or MD file.')
+    setFileProcessingError(t.aeve.errors.unsupportedFormat)
     toast({
-      title: 'Unsupported File',
-      description: 'Please upload a PDF, TXT, or MD file.',
+      title: t.aeve.errors.unsupportedFile,
+      description: t.aeve.errors.unsupportedFormat,
       status: 'warning',
       duration: 5000,
       isClosable: true,
@@ -212,8 +210,8 @@ export default function AevePage() {
   const handleGenerateCoverLetter = async () => {
     if (!jobDescription.trim()) {
       toast({
-        title: 'Missing information',
-        description: 'Please provide the job description',
+        title: t.aeve.errors.missingInfo,
+        description: t.aeve.errors.provideJobDescription,
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -280,8 +278,8 @@ export default function AevePage() {
     } catch (error) {
       console.error('Error generating cover letter:', error)
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to generate cover letter',
+        title: t.aeve.errors.apiError,
+        description: error instanceof Error ? error.message : t.aeve.errors.generateError,
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -296,62 +294,59 @@ export default function AevePage() {
       <Container maxW="container.md" py={8}>
         <VStack spacing={6} align="stretch">
           <Heading as="h1" size="xl" mb={4} textAlign="center">
-            Cover Letter Generator
+            {t.aeve.title}
           </Heading>
 
-          <Text>
-            Generate a personalized cover letter based on your resume and the job description.
-          </Text>
+          <Text>{t.aeve.subtitle}</Text>
 
           <Box bg="gray.900" p={5} borderRadius="md">
             <VStack spacing={4} align="stretch">
               <FormControl>
-                <FormLabel>Your Name (Optional)</FormLabel>
+                <FormLabel>{t.aeve.nameLabel}</FormLabel>
                 <Input
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="John Doe"
+                  placeholder={t.aeve.namePlaceholder}
                   bg="gray.800"
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel>Your Age (Optional)</FormLabel>
+                <FormLabel>{t.aeve.ageLabel}</FormLabel>
                 <Select
-                  placeholder="Select age range"
+                  placeholder={t.aeve.ageRanges.select}
                   value={age}
                   onChange={e => setAge(e.target.value)}
                   bg="gray.800"
                 >
-                  <option value="18-24">18-24</option>
-                  <option value="25-34">25-34</option>
-                  <option value="35-44">35-44</option>
-                  <option value="45-54">45-54</option>
-                  <option value="55+">55+</option>
+                  <option value="18-24">{t.aeve.ageRanges.range1}</option>
+                  <option value="25-34">{t.aeve.ageRanges.range2}</option>
+                  <option value="35-44">{t.aeve.ageRanges.range3}</option>
+                  <option value="45-54">{t.aeve.ageRanges.range4}</option>
+                  <option value="55+">{t.aeve.ageRanges.range5}</option>
                 </Select>
               </FormControl>
 
               <FormControl>
-                <FormLabel>Preferred Language</FormLabel>
+                <FormLabel>{t.aeve.languageLabel}</FormLabel>
                 <Select
                   value={selectedLanguage}
                   onChange={e => setSelectedLanguage(e.target.value)}
                   bg="gray.800"
                 >
-                  <option value="english">English</option>
-                  <option value="french">French</option>
-                  <option value="spanish">Spanish</option>
+                  <option value="english">{t.aeve.languages.english}</option>
+                  <option value="french">{t.aeve.languages.french}</option>
+                  <option value="spanish">{t.aeve.languages.spanish}</option>
+                  <option value="chinese">{t.aeve.languages.chinese}</option>
                 </Select>
               </FormControl>
 
               <FormControl>
-                <FormLabel>
-                  Using your own words, what are the REAL reasons you want to work there? (optional)
-                </FormLabel>
+                <FormLabel>{t.aeve.personalReasonsLabel}</FormLabel>
                 <Textarea
                   value={personalReasons}
                   onChange={e => setPersonalReasons(e.target.value)}
-                  placeholder="I'm excited about this company because..."
+                  placeholder={t.aeve.personalReasonsPlaceholder}
                   size="md"
                   minHeight="100px"
                   bg="gray.800"
@@ -359,7 +354,7 @@ export default function AevePage() {
               </FormControl>
 
               <FormControl>
-                <FormLabel>Upload Resume (Optional)</FormLabel>
+                <FormLabel>{t.aeve.resumeLabel}</FormLabel>
                 <Input
                   type="file"
                   accept=".txt,.pdf,.md"
@@ -376,11 +371,11 @@ export default function AevePage() {
                       flex="1"
                       isLoading={isLoading && !coverLetter}
                     >
-                      Choose File
+                      {t.aeve.chooseFile}
                     </Button>
                     {resumeContent && !fileProcessingError && (
                       <Text ml={4} color="green.300" alignSelf="center">
-                        Resume uploaded ✓
+                        {t.aeve.resumeUploaded}
                       </Text>
                     )}
                   </Flex>
@@ -390,17 +385,17 @@ export default function AevePage() {
                     </Text>
                   )}
                   <Text fontSize="xs" color="gray.400">
-                    Supported formats: PDF, TXT, MD (PDF files will be converted to text)
+                    {t.aeve.supportedFormats}
                   </Text>
                 </Flex>
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Job Description</FormLabel>
+                <FormLabel>{t.aeve.jobDescriptionLabel}</FormLabel>
                 <Textarea
                   value={jobDescription}
                   onChange={e => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description here..."
+                  placeholder={t.aeve.jobDescriptionPlaceholder}
                   size="md"
                   minHeight="200px"
                   bg="gray.800"
@@ -410,7 +405,7 @@ export default function AevePage() {
               <Button
                 onClick={handleGenerateCoverLetter}
                 isLoading={isLoadingGenerate}
-                loadingText="Generating..."
+                loadingText={t.aeve.generatingText}
                 colorScheme="blue"
                 bg="#45a2f8"
                 color="white"
@@ -420,7 +415,7 @@ export default function AevePage() {
                 size="lg"
                 isDisabled={!jobDescription.trim()}
               >
-                Generate Cover Letter
+                {t.aeve.generateButton}
               </Button>
             </VStack>
           </Box>
@@ -428,7 +423,7 @@ export default function AevePage() {
           {coverLetter && (
             <Box bg="gray.900" p={5} borderRadius="md" mt={6} id="cover-letter-result">
               <Heading as="h2" size="md" mb={4}>
-                Your Cover Letter
+                {t.aeve.resultTitle}
               </Heading>
               <Divider mb={4} />
               <Box
@@ -459,7 +454,7 @@ export default function AevePage() {
                 onClick={() => {
                   navigator.clipboard.writeText(coverLetter)
                   toast({
-                    title: 'Copied to clipboard',
+                    title: t.aeve.copiedToClipboard,
                     status: 'success',
                     duration: 2000,
                     isClosable: true,
@@ -468,7 +463,7 @@ export default function AevePage() {
                 mt={4}
                 colorScheme="teal"
               >
-                Copy to Clipboard
+                {t.aeve.copyButton}
               </Button>
             </Box>
           )}
