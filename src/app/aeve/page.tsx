@@ -364,7 +364,7 @@ export default function AevePage() {
       } else {
         // Default English format with location: "New York, March 19, 2025"
         const options = { year: 'numeric', month: 'long', day: 'numeric' }
-        const dateString = dateObj.toLocaleDateString('en-US', options)
+        const dateString = dateObj.toLocaleDateString('en-US', options as any)
         formattedDate = `New York, ${dateString}`
       }
 
