@@ -45,6 +45,51 @@ type TranslationKeys = {
     lastTransaction: string
     backHome: string
   }
+  aeve: {
+    title: string
+    subtitle: string
+    namePlaceholder: string
+    nameLabel: string
+    ageLabel: string
+    ageRanges: {
+      select: string
+      range1: string
+      range2: string
+      range3: string
+      range4: string
+      range5: string
+    }
+    languageLabel: string
+    languages: {
+      english: string
+      french: string
+      spanish: string
+      chinese: string
+    }
+    personalReasonsLabel: string
+    personalReasonsPlaceholder: string
+    resumeLabel: string
+    chooseFile: string
+    resumeUploaded: string
+    supportedFormats: string
+    jobDescriptionLabel: string
+    jobDescriptionPlaceholder: string
+    generateButton: string
+    generatingText: string
+    resultTitle: string
+    copyButton: string
+    copiedToClipboard: string
+    errors: {
+      missingInfo: string
+      provideJobDescription: string
+      fileProcessingError: string
+      convertError: string
+      unsupportedFile: string
+      unsupportedFormat: string
+      apiError: string
+      generateError: string
+    }
+  }
 }
 
 // Define translations for each supported language
@@ -95,6 +140,53 @@ export const translations: Translations = {
       lastTransaction: 'Last Transaction:',
       backHome: 'Back Home',
     },
+    aeve: {
+      title: 'AI Cover Letter Generator',
+      subtitle:
+        'Generate a personalized cover letter based on your resume and the job description.',
+      namePlaceholder: 'John Doe',
+      nameLabel: 'Your Name (Optional)',
+      ageLabel: 'Your Age (Optional)',
+      ageRanges: {
+        select: 'Select age range',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Preferred Language',
+      languages: {
+        english: 'English',
+        french: 'French',
+        spanish: 'Spanish',
+        chinese: 'Chinese',
+      },
+      personalReasonsLabel:
+        'Using your own words, what are the REAL reasons you want to work there? (optional)',
+      personalReasonsPlaceholder: "I'm excited about this company because...",
+      resumeLabel: 'Upload Resume (Optional)',
+      chooseFile: 'Choose File',
+      resumeUploaded: 'Resume uploaded ✓',
+      supportedFormats: 'Supported formats: PDF, TXT, MD (PDF files will be converted to text)',
+      jobDescriptionLabel: 'Job Description',
+      jobDescriptionPlaceholder: 'Paste the job description here...',
+      generateButton: 'Generate Cover Letter',
+      generatingText: 'Generating...',
+      resultTitle: 'Your Cover Letter',
+      copyButton: 'Copy to Clipboard',
+      copiedToClipboard: 'Copied to clipboard',
+      errors: {
+        missingInfo: 'Missing information',
+        provideJobDescription: 'Please provide the job description',
+        fileProcessingError: 'File Processing Error',
+        convertError: 'Could not convert the PDF. Please try a text format instead.',
+        unsupportedFile: 'Unsupported File',
+        unsupportedFormat: 'Please upload a PDF, TXT, or MD file.',
+        apiError: 'Error',
+        generateError: 'Failed to generate cover letter',
+      },
+    },
   },
 
   // Mandarin Chinese
@@ -136,6 +228,51 @@ export const translations: Translations = {
       connectWallet: '连接您的钱包以开始',
       lastTransaction: '最后交易：',
       backHome: '返回首页',
+    },
+    aeve: {
+      title: 'AI 求职信生成器',
+      subtitle: '根据您的简历和职位描述生成个性化求职信。',
+      namePlaceholder: '张三',
+      nameLabel: '您的姓名（可选）',
+      ageLabel: '您的年龄（可选）',
+      ageRanges: {
+        select: '选择年龄范围',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: '首选语言',
+      languages: {
+        english: '英语',
+        french: '法语',
+        spanish: '西班牙语',
+        chinese: '中文',
+      },
+      personalReasonsLabel: '用您自己的话，说说您想在那里工作的真正原因是什么？（可选）',
+      personalReasonsPlaceholder: '我对这家公司感到兴奋是因为...',
+      resumeLabel: '上传简历（可选）',
+      chooseFile: '选择文件',
+      resumeUploaded: '简历已上传 ✓',
+      supportedFormats: '支持的格式：PDF、TXT、MD（PDF文件将被转换为文本）',
+      jobDescriptionLabel: '职位描述',
+      jobDescriptionPlaceholder: '在此粘贴职位描述...',
+      generateButton: '生成求职信',
+      generatingText: '生成中...',
+      resultTitle: '您的求职信',
+      copyButton: '复制到剪贴板',
+      copiedToClipboard: '已复制到剪贴板',
+      errors: {
+        missingInfo: '缺少信息',
+        provideJobDescription: '请提供职位描述',
+        fileProcessingError: '文件处理错误',
+        convertError: '无法转换PDF文件。请尝试文本格式。',
+        unsupportedFile: '不支持的文件',
+        unsupportedFormat: '请上传PDF、TXT或MD文件。',
+        apiError: '错误',
+        generateError: '生成求职信失败',
+      },
     },
   },
 
@@ -181,6 +318,53 @@ export const translations: Translations = {
       lastTransaction: 'अंतिम लेनदेन:',
       backHome: 'होम पर वापस जाएं',
     },
+    aeve: {
+      title: 'AI Cover Letter Generator',
+      subtitle:
+        'Generate a personalized cover letter based on your resume and the job description.',
+      namePlaceholder: 'John Doe',
+      nameLabel: 'Your Name (Optional)',
+      ageLabel: 'Your Age (Optional)',
+      ageRanges: {
+        select: 'Select age range',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Preferred Language',
+      languages: {
+        english: 'English',
+        french: 'French',
+        spanish: 'Spanish',
+        chinese: 'Chinese',
+      },
+      personalReasonsLabel:
+        'Using your own words, what are the REAL reasons you want to work there? (optional)',
+      personalReasonsPlaceholder: "I'm excited about this company because...",
+      resumeLabel: 'Upload Resume (Optional)',
+      chooseFile: 'Choose File',
+      resumeUploaded: 'Resume uploaded ✓',
+      supportedFormats: 'Supported formats: PDF, TXT, MD (PDF files will be converted to text)',
+      jobDescriptionLabel: 'Job Description',
+      jobDescriptionPlaceholder: 'Paste the job description here...',
+      generateButton: 'Generate Cover Letter',
+      generatingText: 'Generating...',
+      resultTitle: 'Your Cover Letter',
+      copyButton: 'Copy to Clipboard',
+      copiedToClipboard: 'Copied to clipboard',
+      errors: {
+        missingInfo: 'Missing information',
+        provideJobDescription: 'Please provide the job description',
+        fileProcessingError: 'File Processing Error',
+        convertError: 'Could not convert the PDF. Please try a text format instead.',
+        unsupportedFile: 'Unsupported File',
+        unsupportedFormat: 'Please upload a PDF, TXT, or MD file.',
+        apiError: 'Error',
+        generateError: 'Failed to generate cover letter',
+      },
+    },
   },
 
   // Spanish
@@ -224,6 +408,54 @@ export const translations: Translations = {
       connectWallet: 'Conecta tu billetera para comenzar',
       lastTransaction: 'Última transacción:',
       backHome: 'Volver a Inicio',
+    },
+    aeve: {
+      title: 'Generador de Cartas de Presentación IA',
+      subtitle:
+        'Genera una carta de presentación personalizada basada en tu currículum y la descripción del trabajo.',
+      namePlaceholder: 'Juan Pérez',
+      nameLabel: 'Tu Nombre (Opcional)',
+      ageLabel: 'Tu Edad (Opcional)',
+      ageRanges: {
+        select: 'Seleccionar rango de edad',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Idioma Preferido',
+      languages: {
+        english: 'Inglés',
+        french: 'Francés',
+        spanish: 'Español',
+        chinese: 'Chino',
+      },
+      personalReasonsLabel:
+        'En tus propias palabras, ¿cuáles son las VERDADERAS razones por las que quieres trabajar allí? (opcional)',
+      personalReasonsPlaceholder: 'Me entusiasma esta empresa porque...',
+      resumeLabel: 'Subir Currículum (Opcional)',
+      chooseFile: 'Elegir Archivo',
+      resumeUploaded: 'Currículum subido ✓',
+      supportedFormats:
+        'Formatos admitidos: PDF, TXT, MD (los archivos PDF se convertirán a texto)',
+      jobDescriptionLabel: 'Descripción del Trabajo',
+      jobDescriptionPlaceholder: 'Pega la descripción del trabajo aquí...',
+      generateButton: 'Generar Carta de Presentación',
+      generatingText: 'Generando...',
+      resultTitle: 'Tu Carta de Presentación',
+      copyButton: 'Copiar al Portapapeles',
+      copiedToClipboard: 'Copiado al portapapeles',
+      errors: {
+        missingInfo: 'Información faltante',
+        provideJobDescription: 'Por favor proporciona la descripción del trabajo',
+        fileProcessingError: 'Error al procesar el archivo',
+        convertError: 'No se pudo convertir el PDF. Intenta con un formato de texto.',
+        unsupportedFile: 'Archivo no compatible',
+        unsupportedFormat: 'Por favor sube un archivo PDF, TXT o MD.',
+        apiError: 'Error',
+        generateError: 'Error al generar la carta de presentación',
+      },
     },
   },
 
@@ -269,6 +501,55 @@ export const translations: Translations = {
       lastTransaction: 'Dernière transaction :',
       backHome: "Retour à l'accueil",
     },
+    aeve: {
+      title: 'La machine à lettre de motivation',
+      subtitle:
+        'Éditez une lettre de motivation personnalisée basée sur votre CV et la description du poste.',
+      namePlaceholder: 'Jean-Michel Motivé',
+      nameLabel: 'Votre nom (facultatif)',
+      ageLabel: 'Votre âge (facultatif)',
+      ageRanges: {
+        select: "Sélectionnez une tranche d'âge",
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Langue de lettre',
+      languages: {
+        english: 'Anglais',
+        french: 'Français',
+        spanish: 'Espagnol',
+        chinese: 'Chinois',
+      },
+      personalReasonsLabel:
+        'Avec vos mots à vous, quelles sont les VRAIES raisons pour lesquelles vous voulez travailler là-bas ? (facultatif)',
+      personalReasonsPlaceholder:
+        "Je suis enthousiaste à l'idée de rejoindre cette entreprise car...",
+      resumeLabel: 'Télécharger un CV (Facultatif)',
+      chooseFile: 'Choisir un Fichier',
+      resumeUploaded: 'CV téléchargé ✓',
+      supportedFormats:
+        'Formats pris en charge : PDF, TXT, MD (les fichiers PDF seront convertis en texte)',
+      jobDescriptionLabel: 'Description du Poste',
+      jobDescriptionPlaceholder: 'Collez la description du poste ici...',
+      generateButton: 'Éditer la lettre',
+      generatingText: 'Édition en cours...',
+      resultTitle: 'Votre lettre de motivation',
+      copyButton: 'Copier dans le presse-papiers',
+      copiedToClipboard: 'Copié dans le presse-papiers',
+      errors: {
+        missingInfo: 'Informations manquantes',
+        provideJobDescription: 'Veuillez fournir la description du poste',
+        fileProcessingError: 'Erreur de traitement de fichier',
+        convertError: 'Impossible de convertir le PDF. Veuillez essayer un format texte.',
+        unsupportedFile: 'Fichier non pris en charge',
+        unsupportedFormat: 'Veuillez télécharger un fichier PDF, TXT ou MD.',
+        apiError: 'Erreur',
+        generateError: 'Échec de la génération de la lettre de motivation',
+      },
+    },
   },
 
   // Arabic
@@ -310,6 +591,53 @@ export const translations: Translations = {
       connectWallet: 'قم بتوصيل محفظتك للبدء',
       lastTransaction: 'آخر معاملة:',
       backHome: 'العودة إلى الصفحة الرئيسية',
+    },
+    aeve: {
+      title: 'AI Cover Letter Generator',
+      subtitle:
+        'Generate a personalized cover letter based on your resume and the job description.',
+      namePlaceholder: 'John Doe',
+      nameLabel: 'Your Name (Optional)',
+      ageLabel: 'Your Age (Optional)',
+      ageRanges: {
+        select: 'Select age range',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Preferred Language',
+      languages: {
+        english: 'English',
+        french: 'French',
+        spanish: 'Spanish',
+        chinese: 'Chinese',
+      },
+      personalReasonsLabel:
+        'Using your own words, what are the REAL reasons you want to work there? (optional)',
+      personalReasonsPlaceholder: "I'm excited about this company because...",
+      resumeLabel: 'Upload Resume (Optional)',
+      chooseFile: 'Choose File',
+      resumeUploaded: 'Resume uploaded ✓',
+      supportedFormats: 'Supported formats: PDF, TXT, MD (PDF files will be converted to text)',
+      jobDescriptionLabel: 'Job Description',
+      jobDescriptionPlaceholder: 'Paste the job description here...',
+      generateButton: 'Generate Cover Letter',
+      generatingText: 'Generating...',
+      resultTitle: 'Your Cover Letter',
+      copyButton: 'Copy to Clipboard',
+      copiedToClipboard: 'Copied to clipboard',
+      errors: {
+        missingInfo: 'Missing information',
+        provideJobDescription: 'Please provide the job description',
+        fileProcessingError: 'File Processing Error',
+        convertError: 'Could not convert the PDF. Please try a text format instead.',
+        unsupportedFile: 'Unsupported File',
+        unsupportedFormat: 'Please upload a PDF, TXT, or MD file.',
+        apiError: 'Error',
+        generateError: 'Failed to generate cover letter',
+      },
     },
   },
 
@@ -355,6 +683,53 @@ export const translations: Translations = {
       lastTransaction: 'সর্বশেষ লেনদেন:',
       backHome: 'হোমে ফিরে যান',
     },
+    aeve: {
+      title: 'AI Cover Letter Generator',
+      subtitle:
+        'Generate a personalized cover letter based on your resume and the job description.',
+      namePlaceholder: 'John Doe',
+      nameLabel: 'Your Name (Optional)',
+      ageLabel: 'Your Age (Optional)',
+      ageRanges: {
+        select: 'Select age range',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Preferred Language',
+      languages: {
+        english: 'English',
+        french: 'French',
+        spanish: 'Spanish',
+        chinese: 'Chinese',
+      },
+      personalReasonsLabel:
+        'Using your own words, what are the REAL reasons you want to work there? (optional)',
+      personalReasonsPlaceholder: "I'm excited about this company because...",
+      resumeLabel: 'Upload Resume (Optional)',
+      chooseFile: 'Choose File',
+      resumeUploaded: 'Resume uploaded ✓',
+      supportedFormats: 'Supported formats: PDF, TXT, MD (PDF files will be converted to text)',
+      jobDescriptionLabel: 'Job Description',
+      jobDescriptionPlaceholder: 'Paste the job description here...',
+      generateButton: 'Generate Cover Letter',
+      generatingText: 'Generating...',
+      resultTitle: 'Your Cover Letter',
+      copyButton: 'Copy to Clipboard',
+      copiedToClipboard: 'Copied to clipboard',
+      errors: {
+        missingInfo: 'Missing information',
+        provideJobDescription: 'Please provide the job description',
+        fileProcessingError: 'File Processing Error',
+        convertError: 'Could not convert the PDF. Please try a text format instead.',
+        unsupportedFile: 'Unsupported File',
+        unsupportedFormat: 'Please upload a PDF, TXT, or MD file.',
+        apiError: 'Error',
+        generateError: 'Failed to generate cover letter',
+      },
+    },
   },
 
   // Russian
@@ -397,6 +772,53 @@ export const translations: Translations = {
       connectWallet: 'Подключите ваш кошелек, чтобы начать',
       lastTransaction: 'Последняя транзакция:',
       backHome: 'Вернуться на главную',
+    },
+    aeve: {
+      title: 'AI Cover Letter Generator',
+      subtitle:
+        'Generate a personalized cover letter based on your resume and the job description.',
+      namePlaceholder: 'John Doe',
+      nameLabel: 'Your Name (Optional)',
+      ageLabel: 'Your Age (Optional)',
+      ageRanges: {
+        select: 'Select age range',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Preferred Language',
+      languages: {
+        english: 'English',
+        french: 'French',
+        spanish: 'Spanish',
+        chinese: 'Chinese',
+      },
+      personalReasonsLabel:
+        'Using your own words, what are the REAL reasons you want to work there? (optional)',
+      personalReasonsPlaceholder: "I'm excited about this company because...",
+      resumeLabel: 'Upload Resume (Optional)',
+      chooseFile: 'Choose File',
+      resumeUploaded: 'Resume uploaded ✓',
+      supportedFormats: 'Supported formats: PDF, TXT, MD (PDF files will be converted to text)',
+      jobDescriptionLabel: 'Job Description',
+      jobDescriptionPlaceholder: 'Paste the job description here...',
+      generateButton: 'Generate Cover Letter',
+      generatingText: 'Generating...',
+      resultTitle: 'Your Cover Letter',
+      copyButton: 'Copy to Clipboard',
+      copiedToClipboard: 'Copied to clipboard',
+      errors: {
+        missingInfo: 'Missing information',
+        provideJobDescription: 'Please provide the job description',
+        fileProcessingError: 'File Processing Error',
+        convertError: 'Could not convert the PDF. Please try a text format instead.',
+        unsupportedFile: 'Unsupported File',
+        unsupportedFormat: 'Please upload a PDF, TXT, or MD file.',
+        apiError: 'Error',
+        generateError: 'Failed to generate cover letter',
+      },
     },
   },
 
@@ -442,6 +864,53 @@ export const translations: Translations = {
       lastTransaction: 'Última transação:',
       backHome: 'Voltar para a Página Inicial',
     },
+    aeve: {
+      title: 'AI Cover Letter Generator',
+      subtitle:
+        'Generate a personalized cover letter based on your resume and the job description.',
+      namePlaceholder: 'John Doe',
+      nameLabel: 'Your Name (Optional)',
+      ageLabel: 'Your Age (Optional)',
+      ageRanges: {
+        select: 'Select age range',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Preferred Language',
+      languages: {
+        english: 'English',
+        french: 'French',
+        spanish: 'Spanish',
+        chinese: 'Chinese',
+      },
+      personalReasonsLabel:
+        'Using your own words, what are the REAL reasons you want to work there? (optional)',
+      personalReasonsPlaceholder: "I'm excited about this company because...",
+      resumeLabel: 'Upload Resume (Optional)',
+      chooseFile: 'Choose File',
+      resumeUploaded: 'Resume uploaded ✓',
+      supportedFormats: 'Supported formats: PDF, TXT, MD (PDF files will be converted to text)',
+      jobDescriptionLabel: 'Job Description',
+      jobDescriptionPlaceholder: 'Paste the job description here...',
+      generateButton: 'Generate Cover Letter',
+      generatingText: 'Generating...',
+      resultTitle: 'Your Cover Letter',
+      copyButton: 'Copy to Clipboard',
+      copiedToClipboard: 'Copied to clipboard',
+      errors: {
+        missingInfo: 'Missing information',
+        provideJobDescription: 'Please provide the job description',
+        fileProcessingError: 'File Processing Error',
+        convertError: 'Could not convert the PDF. Please try a text format instead.',
+        unsupportedFile: 'Unsupported File',
+        unsupportedFormat: 'Please upload a PDF, TXT, or MD file.',
+        apiError: 'Error',
+        generateError: 'Failed to generate cover letter',
+      },
+    },
   },
 
   // Urdu
@@ -485,6 +954,53 @@ export const translations: Translations = {
       connectWallet: 'شروع کرنے کے لیے اپنا والیٹ منسلک کریں',
       lastTransaction: 'آخری لین دین:',
       backHome: 'ہوم پیج پر واپس جائیں',
+    },
+    aeve: {
+      title: 'AI Cover Letter Generator',
+      subtitle:
+        'Generate a personalized cover letter based on your resume and the job description.',
+      namePlaceholder: 'John Doe',
+      nameLabel: 'Your Name (Optional)',
+      ageLabel: 'Your Age (Optional)',
+      ageRanges: {
+        select: 'Select age range',
+        range1: '18-24',
+        range2: '25-34',
+        range3: '35-44',
+        range4: '45-54',
+        range5: '55+',
+      },
+      languageLabel: 'Preferred Language',
+      languages: {
+        english: 'English',
+        french: 'French',
+        spanish: 'Spanish',
+        chinese: 'Chinese',
+      },
+      personalReasonsLabel:
+        'Using your own words, what are the REAL reasons you want to work there? (optional)',
+      personalReasonsPlaceholder: "I'm excited about this company because...",
+      resumeLabel: 'Upload Resume (Optional)',
+      chooseFile: 'Choose File',
+      resumeUploaded: 'Resume uploaded ✓',
+      supportedFormats: 'Supported formats: PDF, TXT, MD (PDF files will be converted to text)',
+      jobDescriptionLabel: 'Job Description',
+      jobDescriptionPlaceholder: 'Paste the job description here...',
+      generateButton: 'Generate Cover Letter',
+      generatingText: 'Generating...',
+      resultTitle: 'Your Cover Letter',
+      copyButton: 'Copy to Clipboard',
+      copiedToClipboard: 'Copied to clipboard',
+      errors: {
+        missingInfo: 'Missing information',
+        provideJobDescription: 'Please provide the job description',
+        fileProcessingError: 'File Processing Error',
+        convertError: 'Could not convert the PDF. Please try a text format instead.',
+        unsupportedFile: 'Unsupported File',
+        unsupportedFormat: 'Please upload a PDF, TXT, or MD file.',
+        apiError: 'Error',
+        generateError: 'Failed to generate cover letter',
+      },
     },
   },
 }
