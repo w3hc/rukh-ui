@@ -296,7 +296,7 @@ export default function AevePage() {
       <Container maxW="container.md" py={8}>
         <VStack spacing={6} align="stretch">
           <Heading as="h1" size="xl" mb={4} textAlign="center">
-            AI Cover Letter Generator
+            Cover Letter Generator
           </Heading>
 
           <Text>

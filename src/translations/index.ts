@@ -141,7 +141,7 @@ export const translations: Translations = {
       backHome: 'Back Home',
     },
     aeve: {
-      title: 'AI Cover Letter Generator',
+      title: 'Cover Letter Generator',
       subtitle:
         'Generate a personalized cover letter based on your resume and the job description.',
       namePlaceholder: 'John Doe',
@@ -230,7 +230,7 @@ export const translations: Translations = {
       backHome: '返回首页',
     },
     aeve: {
-      title: 'AI 求职信生成器',
+      title: '求职信生成器',
       subtitle: '根据您的简历和职位描述生成个性化求职信。',
       namePlaceholder: '张三',
       nameLabel: '您的姓名（可选）',
@@ -319,7 +319,7 @@ export const translations: Translations = {
       backHome: 'होम पर वापस जाएं',
     },
     aeve: {
-      title: 'AI Cover Letter Generator',
+      title: 'Cover Letter Generator',
       subtitle:
         'Generate a personalized cover letter based on your resume and the job description.',
       namePlaceholder: 'John Doe',
@@ -593,7 +593,7 @@ export const translations: Translations = {
       backHome: 'العودة إلى الصفحة الرئيسية',
     },
     aeve: {
-      title: 'AI Cover Letter Generator',
+      title: 'Cover Letter Generator',
       subtitle:
         'Generate a personalized cover letter based on your resume and the job description.',
       namePlaceholder: 'John Doe',
@@ -684,7 +684,7 @@ export const translations: Translations = {
       backHome: 'হোমে ফিরে যান',
     },
     aeve: {
-      title: 'AI Cover Letter Generator',
+      title: 'Cover Letter Generator',
       subtitle:
         'Generate a personalized cover letter based on your resume and the job description.',
       namePlaceholder: 'John Doe',
@@ -774,7 +774,7 @@ export const translations: Translations = {
       backHome: 'Вернуться на главную',
     },
     aeve: {
-      title: 'AI Cover Letter Generator',
+      title: 'Cover Letter Generator',
       subtitle:
         'Generate a personalized cover letter based on your resume and the job description.',
       namePlaceholder: 'John Doe',
@@ -865,7 +865,7 @@ export const translations: Translations = {
       backHome: 'Voltar para a Página Inicial',
     },
     aeve: {
-      title: 'AI Cover Letter Generator',
+      title: 'Cover Letter Generator',
       subtitle:
         'Generate a personalized cover letter based on your resume and the job description.',
       namePlaceholder: 'John Doe',
@@ -956,10 +956,10 @@ export const translations: Translations = {
       backHome: 'ہوم پیج پر واپس جائیں',
     },
     aeve: {
-      title: 'AI Cover Letter Generator',
+      title: 'Cover Letter Generator',
       subtitle:
         'Generate a personalized cover letter based on your resume and the job description.',
-      namePlaceholder: 'John Doe',
+      namePlaceholder: 'Lady Gaga',
       nameLabel: 'Your Name (Optional)',
       ageLabel: 'Your Age (Optional)',
       ageRanges: {
