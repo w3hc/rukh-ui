@@ -524,7 +524,7 @@ export const translations: Translations = {
         chinese: 'Chinois',
       },
       personalReasonsLabel:
-        'Avec vos mots à vous, quelles sont les VRAIES raisons pour lesquelles vous voulez travailler là-bas ? (facultatif)',
+        'Avec vos mots à vous, quelles sont les VRAIES raisons pour lesquelles vous voulez ce poste ? (facultatif)',
       personalReasonsPlaceholder:
         "Je suis enthousiaste à l'idée de rejoindre cette entreprise car...",
       resumeLabel: 'Télécharger un CV (Facultatif)',
