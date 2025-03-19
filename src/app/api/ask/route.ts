@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     const payload = {
       message,
-      context: 'francesca',
+      context: context,
       model: 'anthropic',
       sessionId: sessionId || '',
       walletAddress: address || '',
