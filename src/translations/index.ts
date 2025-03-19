@@ -516,7 +516,7 @@ export const translations: Translations = {
         range4: '45-54',
         range5: '55+',
       },
-      languageLabel: 'Langue de lettre',
+      languageLabel: 'Langue de la lettre',
       languages: {
         english: 'Anglais',
         french: 'Français',
