@@ -363,8 +363,12 @@ export default function AevePage() {
         formattedDate = `北京，${year}年${month}月${day}日`
       } else {
         // Default English format with location: "New York, March 19, 2025"
-        const options = { year: 'numeric', month: 'long', day: 'numeric' }
-        const dateString = dateObj.toLocaleDateString('en-US', options as any)
+        const options: Intl.DateTimeFormatOptions = {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }
+        const dateString = dateObj.toLocaleDateString('en-US', options)
         formattedDate = `New York, ${dateString}`
       }
 
@@ -670,7 +674,7 @@ export default function AevePage() {
                 p={4}
                 borderRadius="md"
                 whiteSpace="pre-wrap"
-                data-testid="cover-letter-content" // Adding a data attribute for easier selection
+                data-testid="cover-letter-content"
                 sx={{
                   ul: {
                     paddingLeft: '1.5rem',
@@ -690,6 +694,8 @@ export default function AevePage() {
                   {coverLetter}
                 </ReactMarkdown>
               </Box>
+
+              {/* Responsive button layout - stack on mobile, side-by-side on larger screens */}
               <Flex mt={4} gap={2} direction={{ base: 'column', md: 'row' }} w={{ base: 'full' }}>
                 <Button
                   onClick={() => {
