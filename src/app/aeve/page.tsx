@@ -23,6 +23,8 @@ import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import remarkGfm from 'remark-gfm'
 import { useAppKitAccount } from '@reown/appkit/react'
 import { useTranslation } from '@/hooks/useTranslation'
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const MarkdownComponents = {
   p: (props: any) => (
@@ -134,11 +136,13 @@ export default function AevePage() {
   const [coverLetter, setCoverLetter] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingGenerate, setIsLoadingGenerate] = useState(false)
+  const [isPdfLoading, setIsPdfLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string>('')
   const [selectedLanguage, setSelectedLanguage] = useState('english')
   const [fileProcessingError, setFileProcessingError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [personalReasons, setPersonalReasons] = useState('')
+  const contentBoxRef = useRef<HTMLDivElement>(null)
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -289,6 +293,240 @@ export default function AevePage() {
     }
   }
 
+  const downloadAsPDF = async () => {
+    console.log('Starting PDF download process')
+
+    if (!coverLetter) {
+      toast({
+        title: 'Error',
+        description: 'No cover letter content to download',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+      return
+    }
+
+    try {
+      setIsPdfLoading(true)
+      toast({
+        title: 'Preparing PDF',
+        description: 'Please wait while we generate your PDF...',
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      })
+
+      // Create a new PDF document
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      })
+
+      // A4 page dimensions (in mm)
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+
+      // Set margins (in mm)
+      const margin = {
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 25,
+      }
+
+      // Calculate content width
+      const contentWidth = pageWidth - margin.left - margin.right
+
+      // Format the date with location based on language
+      const dateObj = new Date()
+      let formattedDate = ''
+
+      if (selectedLanguage === 'french') {
+        // French format with location: "Montpellier, le 19 mars 2025"
+        const day = dateObj.getDate()
+        const month = dateObj.toLocaleString('fr-FR', { month: 'long' })
+        const year = dateObj.getFullYear()
+        formattedDate = `Montpellier, le ${day} ${month} ${year}`
+      } else if (selectedLanguage === 'spanish') {
+        // Spanish format with location: "Madrid, 19 de marzo de 2025"
+        const day = dateObj.getDate()
+        const month = dateObj.toLocaleString('es-ES', { month: 'long' })
+        const year = dateObj.getFullYear()
+        formattedDate = `Madrid, ${day} de ${month} de ${year}`
+      } else if (selectedLanguage === 'chinese') {
+        // Chinese format: "北京，2025年3月19日"
+        const year = dateObj.getFullYear()
+        const month = dateObj.getMonth() + 1
+        const day = dateObj.getDate()
+        formattedDate = `北京，${year}年${month}月${day}日`
+      } else {
+        // Default English format with location: "New York, March 19, 2025"
+        const options = { year: 'numeric', month: 'long', day: 'numeric' }
+        const dateString = dateObj.toLocaleDateString('en-US', options)
+        formattedDate = `New York, ${dateString}`
+      }
+
+      // Set initial font settings
+      pdf.setFont('helvetica')
+      pdf.setFontSize(11)
+
+      // Add sender info at top left (if name is provided)
+      let yPosition = margin.top
+      if (name) {
+        pdf.text(name, margin.left, yPosition)
+        yPosition += 5
+      }
+
+      // Add date aligned to the right
+      const dateWidth = (pdf.getStringUnitWidth(formattedDate) * 11) / pdf.internal.scaleFactor
+      pdf.text(formattedDate, pageWidth - margin.right - dateWidth, yPosition)
+
+      // Move down for subject line
+      yPosition += 15
+
+      // Add subject line based on language
+      let subject = 'Subject: Job Application'
+      switch (selectedLanguage) {
+        case 'french':
+          subject = 'Objet : Candidature'
+          break
+        case 'spanish':
+          subject = 'Asunto: Solicitud de Empleo'
+          break
+        case 'chinese':
+          subject = '主题：求职申请'
+          break
+      }
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(subject, margin.left, yPosition)
+      pdf.setFont('helvetica', 'normal')
+
+      // Move down for greeting
+      yPosition += 10
+
+      // Greeting based on language
+      let greeting = 'Dear Hiring Manager,'
+      switch (selectedLanguage) {
+        case 'french':
+          greeting = 'Madame, Monsieur,'
+          break
+        case 'spanish':
+          greeting = 'Estimado/a responsable de contratación:'
+          break
+        case 'chinese':
+          greeting = '尊敬的招聘经理：'
+          break
+      }
+
+      pdf.text(greeting, margin.left, yPosition)
+
+      // Add some space before the main content
+      yPosition += 10
+
+      // Process the markdown content
+      // We need to convert markdown to plain text and handle paragraphs
+      const plainText = coverLetter
+        .replace(/#{1,6}\s?(.*?)$/gm, '$1') // Remove headings
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+        .replace(/\*(.*?)\*/g, '$1') // Remove italic
+        .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links
+        .replace(/^-\s+/gm, '• ') // Convert list items to bullets
+
+      // Split by paragraphs
+      const paragraphs = plainText.split(/\n\n+/)
+
+      // Add each paragraph with proper line spacing and text wrapping
+      paragraphs.forEach(paragraph => {
+        // Skip empty paragraphs
+        if (!paragraph.trim()) return
+
+        // Split into lines for manual text wrapping
+        const lines = pdf.splitTextToSize(paragraph.trim(), contentWidth)
+
+        // Check if we need a new page
+        if (yPosition + lines.length * 5 > pageHeight - margin.bottom) {
+          pdf.addPage()
+          yPosition = margin.top
+        }
+
+        // Add the text
+        pdf.text(lines, margin.left, yPosition)
+
+        // Move to position for next paragraph
+        yPosition += lines.length * 5 + 5 // Add extra space between paragraphs
+      })
+
+      // Add closing
+      yPosition += 5
+
+      // Closing based on language
+      let closing = 'Sincerely,'
+      switch (selectedLanguage) {
+        case 'french':
+          closing =
+            "Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées."
+          break
+        case 'spanish':
+          closing = 'Atentamente,'
+          break
+        case 'chinese':
+          closing = '此致敬礼，'
+          break
+      }
+
+      // Split closing into lines if it's too long
+      const closingLines = pdf.splitTextToSize(closing, contentWidth)
+      pdf.text(closingLines, margin.left, yPosition)
+
+      // Add signature if name is provided
+      if (name) {
+        yPosition += closingLines.length * 5 + 10
+        pdf.text(name, margin.left, yPosition)
+      }
+
+      // Set filename based on language
+      let filePrefix = 'Cover_Letter'
+      switch (selectedLanguage) {
+        case 'french':
+          filePrefix = 'Lettre_de_Motivation'
+          break
+        case 'spanish':
+          filePrefix = 'Carta_de_Presentacion'
+          break
+        case 'chinese':
+          filePrefix = '求职信'
+          break
+      }
+
+      const filename = `${name ? name.trim() + '_' : ''}${filePrefix}_${new Date().toISOString().split('T')[0]}.pdf`
+
+      console.log('Saving PDF as:', filename)
+      pdf.save(filename)
+
+      toast({
+        title: 'Success!',
+        description: 'Your cover letter has been downloaded as a PDF',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      })
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to generate PDF. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    } finally {
+      setIsPdfLoading(false)
+    }
+  }
+
   return (
     <Box minH="calc(100vh - 80px)" display="flex" flexDirection="column" bg="black" pt="60px">
       <Container maxW="container.md" py={8}>
@@ -427,10 +665,12 @@ export default function AevePage() {
               </Heading>
               <Divider mb={4} />
               <Box
+                ref={contentBoxRef}
                 bg="gray.800"
                 p={4}
                 borderRadius="md"
                 whiteSpace="pre-wrap"
+                data-testid="cover-letter-content" // Adding a data attribute for easier selection
                 sx={{
                   ul: {
                     paddingLeft: '1.5rem',
@@ -450,21 +690,32 @@ export default function AevePage() {
                   {coverLetter}
                 </ReactMarkdown>
               </Box>
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(coverLetter)
-                  toast({
-                    title: t.aeve.copiedToClipboard,
-                    status: 'success',
-                    duration: 2000,
-                    isClosable: true,
-                  })
-                }}
-                mt={4}
-                colorScheme="teal"
-              >
-                {t.aeve.copyButton}
-              </Button>
+              <Flex mt={4} gap={2} direction={{ base: 'column', md: 'row' }} w={{ base: 'full' }}>
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(coverLetter)
+                    toast({
+                      title: t.aeve.copiedToClipboard,
+                      status: 'success',
+                      duration: 2000,
+                      isClosable: true,
+                    })
+                  }}
+                  colorScheme="teal"
+                  w={{ base: 'full' }}
+                >
+                  {t.aeve.copyButton}
+                </Button>
+                <Button
+                  onClick={downloadAsPDF}
+                  colorScheme="blue"
+                  isLoading={isPdfLoading}
+                  loadingText="Creating PDF..."
+                  w={{ base: 'full' }}
+                >
+                  Download as PDF
+                </Button>
+              </Flex>
             </Box>
           )}
         </VStack>
