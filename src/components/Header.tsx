@@ -69,7 +69,7 @@ export default function Header() {
         >
           <Link href="/">
             <Heading as="h3" size="md" textAlign="center">
-              Rukh
+              Mon assistant
             </Heading>
           </Link>
         </Box>
@@ -81,7 +81,7 @@ export default function Header() {
           opacity={Math.max(1 - rightSlideValue / 100, 0)}
           transition="all 0.5s ease-in-out"
         >
-          {!isConnected ? (
+          {/* {!isConnected ? (
             <Button
               bg="#8c1c84"
               color="white"
@@ -97,21 +97,21 @@ export default function Header() {
             <>
               <Box transform="scale(0.85)" transformOrigin="right center">
                 {/* <appkit-network-button /> */}
-              </Box>
-              <Button
-                bg="#8c1c84"
-                color="white"
-                _hover={{
-                  bg: '#6d1566',
-                }}
-                onClick={handleDisconnect}
-                size="sm"
-                ml={4}
-              >
-                {t.common.logout}
-              </Button>
-            </>
-          )}
+          {/* </Box> */}
+          {/* <Button
+            bg="#8c1c84"
+            color="white"
+            _hover={{
+              bg: '#6d1566',
+            }}
+            onClick={handleDisconnect}
+            size="sm"
+            ml={4}
+          >
+            {t.common.logout}
+          </Button> */}
+          {/* </> */}
+
           <Menu>
             <MenuButton
               as={IconButton}
@@ -121,11 +121,14 @@ export default function Header() {
               size="sm"
             />
             <MenuList>
-              <Link href="/create" color="white">
+              {/* <Link href="/create" color="white">
                 <MenuItem fontSize="sm">Create</MenuItem>
               </Link>
               <Link href="/aeve" color="white">
                 <MenuItem fontSize="sm">Cover letter</MenuItem>
+              </Link> */}
+              <Link href="/menuiserie" color="white">
+                <MenuItem fontSize="sm">Menuiserie</MenuItem>
               </Link>
             </MenuList>
           </Menu>
