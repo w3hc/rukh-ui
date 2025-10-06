@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
   Container,
   Box,
@@ -34,6 +34,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import remarkGfm from 'remark-gfm'
 import { useAppKitAccount } from '@reown/appkit/react'
+import { useTheme } from '@/context/ThemeContext'
 
 interface Message {
   text: string
@@ -62,7 +63,7 @@ interface RukhResponse {
   sessionId: string
 }
 
-const MarkdownComponents = {
+const MarkdownComponents = (mode: 'light' | 'dark') => ({
   p: (props: any) => (
     <Text mb={2} lineHeight="tall" color="inherit">
       {props.children}
@@ -104,7 +105,13 @@ const MarkdownComponents = {
 
     if (inline) {
       return (
-        <Text as="code" px={1} bg="gray.700" borderRadius="sm" fontSize="0.875em">
+        <Text
+          as="code"
+          px={1}
+          bg={mode === 'dark' ? 'gray.700' : 'gray.200'}
+          borderRadius="sm"
+          fontSize="0.875em"
+        >
           {children}
         </Text>
       )
@@ -112,9 +119,21 @@ const MarkdownComponents = {
 
     if (language === 'json') {
       return (
-        <Box my={4} p={4} bg="blue.50" borderRadius="md" border="1px" borderColor="blue.200">
-          <Text fontSize="sm" color="blue.600" mb={2} fontWeight="bold">
-            Devis Battapli IA Alpha
+        <Box
+          my={4}
+          p={4}
+          bg={mode === 'dark' ? 'blue.900' : 'blue.50'}
+          borderRadius="md"
+          border="1px"
+          borderColor={mode === 'dark' ? 'blue.700' : 'blue.200'}
+        >
+          <Text
+            fontSize="sm"
+            color={mode === 'dark' ? 'blue.200' : 'blue.600'}
+            mb={2}
+            fontWeight="bold"
+          >
+            Devis Batappli IA Alpha
           </Text>
           <SyntaxHighlighter
             language={language}
@@ -164,24 +183,25 @@ const MarkdownComponents = {
       {props.children}
     </Link>
   ),
-}
+})
 
-const ChatMessage: React.FC<ChatMessageProps> = ({
+const ChatMessage: React.FC<ChatMessageProps & { mode: 'light' | 'dark' }> = ({
   message,
   isUser,
   txHash,
   explorerLink,
   containsQuote,
   onDownloadQuote,
+  mode,
 }) => (
   <Box w="full" py={4}>
-    <Container maxW="container.md" px={4}>
-      <Box color={isUser ? '#45a2f8' : 'white'}>
+    <Container maxW="container.md" px={0}>
+      <Box color={isUser ? '#45a2f8' : mode === 'dark' ? 'white' : 'black'}>
         {isUser ? (
           <Text whiteSpace="pre-wrap">{message}</Text>
         ) : (
           <>
-            <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown components={MarkdownComponents(mode)} remarkPlugins={[remarkGfm]}>
               {message}
             </ReactMarkdown>
             <HStack mt={3} spacing={2}>
@@ -219,7 +239,8 @@ const QuoteModal: React.FC<{
   onClose: () => void
   quoteData: any
   onDownload: () => void
-}> = ({ isOpen, onClose, quoteData, onDownload }) => {
+  mode: 'light' | 'dark'
+}> = ({ isOpen, onClose, quoteData, onDownload, mode }) => {
   if (!quoteData) return null
 
   const { devis } = quoteData
@@ -227,10 +248,13 @@ const QuoteModal: React.FC<{
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalOverlay />
-      <ModalContent bg="gray.800" color="white">
+      <ModalContent
+        bg={mode === 'dark' ? 'gray.800' : 'white'}
+        color={mode === 'dark' ? 'white' : 'black'}
+      >
         <ModalHeader>
           <HStack>
-            <Text>Devis Battapli IA Alpha</Text>
+            <Text>Devis Batappli IA Alpha</Text>
             <Badge colorScheme="blue">{devis.numero}</Badge>
           </HStack>
         </ModalHeader>
@@ -259,9 +283,15 @@ const QuoteModal: React.FC<{
                 Articles :
               </Text>
               {devis.commande.articles.map((article: any, index: number) => (
-                <Box key={index} p={3} bg="gray.700" borderRadius="md" mb={2}>
+                <Box
+                  key={index}
+                  p={3}
+                  bg={mode === 'dark' ? 'gray.700' : 'gray.100'}
+                  borderRadius="md"
+                  mb={2}
+                >
                   <Text fontWeight="semibold">{article.designation}</Text>
-                  <Text fontSize="sm" color="gray.300">
+                  <Text fontSize="sm" color={mode === 'dark' ? 'gray.300' : 'gray.600'}>
                     Réf: {article.reference} | {article.quantite} {article.unite}
                   </Text>
                   <Text fontSize="sm">
@@ -305,6 +335,7 @@ const QuoteModal: React.FC<{
 export default function MenuiseriePage() {
   const toast = useToast()
   const { address } = useAppKitAccount()
+  const { mode } = useTheme()
 
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -317,13 +348,13 @@ export default function MenuiseriePage() {
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     if (initialLoadComplete && messagesEndRef.current) {
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 50)
     }
-  }
+  }, [initialLoadComplete])
 
   useEffect(() => {
     setMessages([
@@ -344,7 +375,7 @@ export default function MenuiseriePage() {
     if (initialLoadComplete && messages.length > 1) {
       scrollToBottom()
     }
-  }, [messages, initialLoadComplete])
+  }, [messages, initialLoadComplete, scrollToBottom])
 
   const detectQuoteInResponse = (text: string): { containsQuote: boolean; quoteData: any } => {
     try {
@@ -453,7 +484,7 @@ export default function MenuiseriePage() {
   }
 
   <div style="margin-top: 40px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
-    <p><strong>Devis généré par Battapli IA Alpha</strong></p>
+    <p><strong>Devis généré par Batappli IA Alpha</strong></p>
     <p>Validité: ${devis.conditions.validite} | Acompte: ${devis.conditions.acompte}</p>
   </div>
 </body>
@@ -571,14 +602,20 @@ export default function MenuiseriePage() {
   }
 
   return (
-    <Box minH="calc(100vh - 80px)" display="flex" flexDirection="column" bg="black" pt="40px">
-      <Box bg="blue.900" py={4} mb={4}>
+    <Box
+      minH="calc(100vh - 80px)"
+      display="flex"
+      flexDirection="column"
+      bg={mode === 'dark' ? 'black' : 'white'}
+      pt="40px"
+    >
+      <Box bg={mode === 'dark' ? 'blue.900' : '#FDD69D'} py={4} mb={4}>
         <Container maxW="container.md">
           <VStack spacing={3}>
-            <Heading size="lg" color="white">
-              Battapli IA Alpha
+            <Heading size="lg" color={mode === 'dark' ? 'white' : 'black'}>
+              Batappli IA
             </Heading>
-            <Text color="blue.100" textAlign="center" fontSize="sm">
+            <Text color={mode === 'dark' ? 'blue.100' : 'black'} textAlign="center" fontSize="sm">
               Corps de métier : <strong>menuiserie</strong>
             </Text>
           </VStack>
@@ -589,7 +626,12 @@ export default function MenuiseriePage() {
         <Container maxW="container.md" h="full" px={0}>
           <VStack spacing={0} align="stretch">
             <FormControl maxW="200px">
-              <FormLabel htmlFor="model-select" fontSize="xs" color="blue.200" mb={1}>
+              <FormLabel
+                htmlFor="model-select"
+                fontSize="xs"
+                color={mode === 'dark' ? 'blue.200' : 'gray.600'}
+                mb={1}
+              >
                 Modèle
               </FormLabel>
               <Select
@@ -597,9 +639,9 @@ export default function MenuiseriePage() {
                 value={selectedModel}
                 onChange={e => setSelectedModel(e.target.value as 'anthropic' | 'mistral')}
                 size="sm"
-                borderColor="blue.700"
-                bg="blue.800"
-                color="white"
+                borderColor={mode === 'dark' ? 'blue.700' : 'gray.300'}
+                bg={mode === 'dark' ? 'blue.800' : 'white'}
+                color={mode === 'dark' ? 'white' : 'black'}
                 _focus={{
                   borderColor: '#45a2f8',
                   boxShadow: 'none',
@@ -632,6 +674,7 @@ export default function MenuiseriePage() {
                 onDownloadQuote={
                   message.quoteData ? () => handleQuoteDownload(message.quoteData) : undefined
                 }
+                mode={mode}
               />
             ))}
             {isTyping && (
@@ -646,25 +689,32 @@ export default function MenuiseriePage() {
         </Container>
       </Box>
 
-      <Box as="form" onSubmit={handleSubmit} p={4} bg="gray.900">
+      <Box as="form" onSubmit={handleSubmit} p={4} bg={mode === 'dark' ? 'gray.900' : 'gray.100'}>
         <Container maxW="container.md" mx="auto">
           <Flex gap={2}>
             <Input
               value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              placeholder="Demandez un devis... ex: 'Prix pour 100m² de parquet standard'"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
+              placeholder="Fais-moi un devis pour un parquet de 200 m² en chêne massif"
               size="lg"
               borderColor="gray.700"
-              _focus={{ borderColor: '#45a2f8', boxShadow: 'none' }}
-              bg="gray.800"
+              _placeholder={{
+                color: 'gray.500',
+              }}
+              _focus={{
+                borderColor: '#45a2f8',
+                boxShadow: 'none',
+              }}
             />
             <Button
               type="submit"
               size="lg"
               isDisabled={!inputValue.trim() || isTyping}
-              bg="#45a2f8"
+              bg="black"
               color="white"
-              _hover={{ bg: '#2589e6' }}
+              _hover={{
+                bg: 'gray.800',
+              }}
             >
               Envoyer
             </Button>
@@ -680,6 +730,7 @@ export default function MenuiseriePage() {
           generatePDFFromQuote(currentQuoteData)
           onClose()
         }}
+        mode={mode}
       />
     </Box>
   )
