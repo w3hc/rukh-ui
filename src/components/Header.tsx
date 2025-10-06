@@ -128,7 +128,7 @@ export default function Header() {
                 <MenuItem fontSize="sm">Cover letter</MenuItem>
               </Link> */}
               <Link href="/menuiserie" color="white">
-                <MenuItem fontSize="sm">Menuiserie</MenuItem>
+                <MenuItem fontSize="sm">Battapli IA</MenuItem>
               </Link>
             </MenuList>
           </Menu>
