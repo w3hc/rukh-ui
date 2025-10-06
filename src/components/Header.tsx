@@ -14,9 +14,10 @@ import {
 import { useAppKit } from '@reown/appkit/react'
 import { useAppKitAccount, useDisconnect } from '@reown/appkit/react'
 import Link from 'next/link'
-import { HamburgerIcon } from '@chakra-ui/icons'
+import { HamburgerIcon, SunIcon, MoonIcon } from '@chakra-ui/icons'
 import LanguageSelector from './LanguageSelector'
 import { useTranslation } from '@/hooks/useTranslation'
+import { useTheme } from '@/context/ThemeContext'
 import { useState, useEffect } from 'react'
 
 export default function Header() {
@@ -24,6 +25,7 @@ export default function Header() {
   const { isConnected, address } = useAppKitAccount()
   const { disconnect } = useDisconnect()
   const t = useTranslation()
+  const { mode, toggleTheme } = useTheme()
 
   const [scrollPosition, setScrollPosition] = useState(0)
 
@@ -60,7 +62,18 @@ export default function Header() {
   }
 
   return (
-    <Box as="header" py={4} position="fixed" w="100%" top={0} zIndex={10}>
+    <Box
+      as="header"
+      py={4}
+      position="fixed"
+      w="100%"
+      top={0}
+      zIndex={10}
+      bg={mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)'}
+      backdropFilter="blur(10px)"
+      borderBottom="1px solid"
+      borderColor={mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.200'}
+    >
       <Flex justify="space-between" align="center" px={4}>
         <Box
           transform={`translateX(-${leftSlideValue}px)`}
@@ -81,37 +94,6 @@ export default function Header() {
           opacity={Math.max(1 - rightSlideValue / 100, 0)}
           transition="all 0.5s ease-in-out"
         >
-          {/* {!isConnected ? (
-            <Button
-              bg="#8c1c84"
-              color="white"
-              _hover={{
-                bg: '#6d1566',
-              }}
-              onClick={handleConnect}
-              size="sm"
-            >
-              {t.common.login}
-            </Button>
-          ) : (
-            <>
-              <Box transform="scale(0.85)" transformOrigin="right center">
-                {/* <appkit-network-button /> */}
-          {/* </Box> */}
-          {/* <Button
-            bg="#8c1c84"
-            color="white"
-            _hover={{
-              bg: '#6d1566',
-            }}
-            onClick={handleDisconnect}
-            size="sm"
-            ml={4}
-          >
-            {t.common.logout}
-          </Button> */}
-          {/* </> */}
-
           <Menu>
             <MenuButton
               as={IconButton}
@@ -119,20 +101,100 @@ export default function Header() {
               icon={<HamburgerIcon />}
               variant="ghost"
               size="sm"
+              color={mode === 'dark' ? 'white' : 'black'}
+              _hover={{
+                bg: mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.100',
+              }}
             />
-            <MenuList>
-              {/* <Link href="/create" color="white">
-                <MenuItem fontSize="sm">Create</MenuItem>
+
+            <MenuList bg={mode === 'dark' ? 'gray.800' : 'white'}>
+              <Link href="/menuiserie">
+                <MenuItem
+                  fontSize="sm"
+                  _hover={{ bg: mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.100' }}
+                >
+                  Menuiserie
+                </MenuItem>
               </Link>
-              <Link href="/aeve" color="white">
-                <MenuItem fontSize="sm">Cover letter</MenuItem>
-              </Link> */}
-              <Link href="/menuiserie" color="white">
-                <MenuItem fontSize="sm">Menuiserie</MenuItem>
-              </Link>
+              <MenuItem fontSize="sm" isDisabled>
+                Plomberie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Électricité
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Maçonnerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Charpenterie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Couverture
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Plâtrerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Peinture
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Carrelage
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Chauffage
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Climatisation
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Isolation
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Serrurerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Métallerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Vitrerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Parqueteur
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Ravalement
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Terrassement
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                VRD
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Zinguerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Étanchéité
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Façadier
+              </MenuItem>
             </MenuList>
           </Menu>
+
           <LanguageSelector />
+
+          <IconButton
+            aria-label="Toggle theme"
+            icon={mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+            onClick={toggleTheme}
+            size="xs"
+            variant="ghost"
+            color="#FDD69D"
+            _hover={{
+              bg: mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.100',
+            }}
+          />
         </Flex>
       </Flex>
     </Box>

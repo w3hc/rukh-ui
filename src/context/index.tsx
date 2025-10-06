@@ -21,6 +21,7 @@ import {
 } from '@reown/appkit/networks'
 import { type ReactNode, memo } from 'react'
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { useTheme } from './ThemeContext'
 
 const projectId = process.env['NEXT_PUBLIC_PROJECT_ID']
 if (!projectId) {
@@ -60,23 +61,36 @@ createAppKit({
   enableCoinbase: true,
 })
 
-const theme = extendTheme({
-  config: {
-    initialColorMode: 'dark',
-    useSystemColorMode: false,
-  },
-  styles: {
-    global: {
-      body: {
-        bg: '#000000',
-        color: 'white',
+const ChakraWrapper = memo(function ChakraWrapper({ children }: { children: ReactNode }) {
+  const { mode } = useTheme()
+
+  const theme = extendTheme({
+    config: {
+      initialColorMode: 'light',
+      useSystemColorMode: false,
+    },
+    styles: {
+      global: {
+        body: {
+          bg: mode === 'dark' ? '#000000' : 'white',
+          color: mode === 'dark' ? 'white' : 'black',
+        },
       },
     },
-  },
+    colors: {
+      brand: {
+        peach: '#FDD69D',
+        blue: '#45a2f8',
+        purple: '#8c1c84',
+      },
+    },
+  })
+
+  return <ChakraProvider theme={theme}>{children}</ChakraProvider>
 })
 
 const ContextProvider = memo(function ContextProvider({ children }: { children: ReactNode }) {
-  return <ChakraProvider theme={theme}>{children}</ChakraProvider>
+  return <ChakraWrapper>{children}</ChakraWrapper>
 })
 
 export default ContextProvider

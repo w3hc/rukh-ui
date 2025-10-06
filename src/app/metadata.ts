@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://rukh-ui.netlify.app'),
   title: 'My Faithful Assistant',
   description: 'Build your own assistant in a few seconds.',
 

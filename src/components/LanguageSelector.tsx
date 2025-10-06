@@ -5,9 +5,11 @@ import { useLanguage } from '@/context/LanguageContext'
 import { Language } from '@/utils/i18n'
 import { IconButton, Menu, MenuButton, MenuList, MenuItem, Text, Flex, Box } from '@chakra-ui/react'
 import { MdLanguage } from 'react-icons/md'
+import { useTheme } from '@/context/ThemeContext'
 
 const LanguageSelector: React.FC = () => {
   const { language, setLanguage } = useLanguage()
+  const { mode } = useTheme()
 
   const handleLanguageChange = (newLang: Language) => {
     setLanguage(newLang)
@@ -34,14 +36,29 @@ const LanguageSelector: React.FC = () => {
         icon={<MdLanguage size="1.2em" />}
         variant="ghost"
         size="sm"
+        color={mode === 'dark' ? 'white' : 'black'}
+        _hover={{
+          bg: mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.100',
+        }}
       />
-      <MenuList maxH="300px" overflowY="auto" minWidth="auto">
+      <MenuList
+        maxH="300px"
+        overflowY="auto"
+        minWidth="auto"
+        bg={mode === 'dark' ? 'gray.800' : 'white'}
+      >
         {languageInfo.map(({ code, name }) => (
           <MenuItem
             key={code}
             onClick={() => handleLanguageChange(code as Language)}
-            bg={language === code ? 'whiteAlpha.200' : undefined}
-            _hover={{ bg: 'whiteAlpha.300' }}
+            bg={
+              language === code
+                ? mode === 'dark'
+                  ? 'whiteAlpha.200'
+                  : 'blackAlpha.100'
+                : undefined
+            }
+            _hover={{ bg: mode === 'dark' ? 'whiteAlpha.300' : 'blackAlpha.200' }}
           >
             <Flex align="center" justify="space-between">
               <Box>

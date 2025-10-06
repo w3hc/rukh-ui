@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
   Container,
   Box,
@@ -200,21 +200,19 @@ export default function Chat() {
     return () => clearTimeout(timer)
   }, [t.chat.welcomeMessage])
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     if (initialLoadComplete && messagesEndRef.current) {
-      // Use a small delay to ensure DOM has updated
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 50)
     }
-  }
+  }, [initialLoadComplete])
 
   useEffect(() => {
-    // Only scroll on message changes, not on initial load
     if (initialLoadComplete && messages.length > 1) {
       scrollToBottom()
     }
-  }, [messages, initialLoadComplete])
+  }, [messages, initialLoadComplete, scrollToBottom])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

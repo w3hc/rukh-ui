@@ -23,7 +23,7 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { message, sessionId, context, address } = body
+    const { message, sessionId, context, address, model } = body
 
     if (!message) {
       console.warn('❌ Missing message in request body')
@@ -36,10 +36,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate model if provided, default to mistral
+    const validModels = ['anthropic', 'mistral']
+    const selectedModel = model && validModels.includes(model) ? model : 'mistral'
+
     const payload = {
       message,
-      context: context,
-      model: 'anthropic',
+      context: context || 'batman',
+      model: selectedModel,
       sessionId: sessionId || '',
       walletAddress: address || '',
     }
@@ -57,7 +61,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(payload),
     })
 
-    console.log('🔍 Rukh API response status:', response.status)
+    console.log('📋 Rukh API response status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
