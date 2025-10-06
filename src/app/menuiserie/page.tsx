@@ -581,6 +581,13 @@ export default function MenuiseriePage() {
             <Text color="blue.100" textAlign="center" fontSize="sm">
               Corps de métier : <strong>menuiserie</strong>
             </Text>
+          </VStack>
+        </Container>
+      </Box>
+
+      <Box flex="1" overflowY="auto" px={4}>
+        <Container maxW="container.md" h="full" px={0}>
+          <VStack spacing={0} align="stretch">
             <FormControl maxW="200px">
               <FormLabel htmlFor="model-select" fontSize="xs" color="blue.200" mb={1}>
                 Modèle
@@ -603,24 +610,17 @@ export default function MenuiseriePage() {
                 <option value="openai" disabled>
                   OpenAI (ChatGPT)
                 </option>
-                <option value="deepseek" disabled>
-                  DeepSeek
-                </option>
                 <option value="gemini" disabled>
-                  Gemini
+                  Google (Gemini)
                 </option>
                 <option value="llama" disabled>
-                  Llama
+                  Meta (Llama)
+                </option>
+                <option value="deepseek" disabled>
+                  DeepSeek (DeepSeek v3.2)
                 </option>
               </Select>
             </FormControl>
-          </VStack>
-        </Container>
-      </Box>
-
-      <Box flex="1" overflowY="auto" px={4}>
-        <Container maxW="container.md" h="full" px={0}>
-          <VStack spacing={0} align="stretch">
             {messages.map((message, index) => (
               <ChatMessage
                 key={index}
