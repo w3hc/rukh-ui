@@ -23,6 +23,9 @@ import {
   useDisclosure,
   HStack,
   Divider,
+  Select,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react'
 import { DownloadIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import Image from 'next/image'
@@ -111,7 +114,7 @@ const MarkdownComponents = {
       return (
         <Box my={4} p={4} bg="blue.50" borderRadius="md" border="1px" borderColor="blue.200">
           <Text fontSize="sm" color="blue.600" mb={2} fontWeight="bold">
-            Devis Artisan Alpha Bois
+            Devis Battapli IA Alpha
           </Text>
           <SyntaxHighlighter
             language={language}
@@ -227,7 +230,7 @@ const QuoteModal: React.FC<{
       <ModalContent bg="gray.800" color="white">
         <ModalHeader>
           <HStack>
-            <Text>Devis Artisan Alpha Bois</Text>
+            <Text>Devis Battapli IA Alpha</Text>
             <Badge colorScheme="blue">{devis.numero}</Badge>
           </HStack>
         </ModalHeader>
@@ -307,6 +310,7 @@ export default function MenuiseriePage() {
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [sessionId, setSessionId] = useState<string>('')
+  const [selectedModel, setSelectedModel] = useState<'anthropic' | 'mistral'>('mistral')
   const [currentQuoteData, setCurrentQuoteData] = useState<any>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
@@ -324,7 +328,7 @@ export default function MenuiseriePage() {
   useEffect(() => {
     setMessages([
       {
-        text: 'Bonjour ! Je suis Marie, votre assistante commerciale chez Artisan Alpha Bois. Je suis là pour vous aider à éditer un devis.\n\nComment puis-je vous aider en cette belle journée ?',
+        text: "Bonjour ! Je suis Marc, votre assistant chez Battapli IA Alpha spécialisé en menuiserie. Je suis là pour vous aider à éditer un devis.\n\nComment puis-je vous aider aujourd'hui ?",
         isUser: false,
       },
     ])
@@ -449,7 +453,7 @@ export default function MenuiseriePage() {
   }
 
   <div style="margin-top: 40px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
-    <p><strong>Devis généré par Marie, assistante Artisan Alpha Bois</strong></p>
+    <p><strong>Devis généré par Battapli IA Alpha</strong></p>
     <p>Validité: ${devis.conditions.validite} | Acompte: ${devis.conditions.acompte}</p>
   </div>
 </body>
@@ -513,8 +517,8 @@ export default function MenuiseriePage() {
         },
         body: JSON.stringify({
           message: inputValue,
-          // context: 'menuiserie',
           context: 'batman',
+          model: selectedModel,
           sessionId: sessionId || '',
           address: address || '',
         }),
@@ -570,13 +574,46 @@ export default function MenuiseriePage() {
     <Box minH="calc(100vh - 80px)" display="flex" flexDirection="column" bg="black" pt="40px">
       <Box bg="blue.900" py={4} mb={4}>
         <Container maxW="container.md">
-          <VStack spacing={2}>
+          <VStack spacing={3}>
             <Heading size="lg" color="white">
-              Artisan Alpha
+              Battapli IA Alpha
             </Heading>
             <Text color="blue.100" textAlign="center" fontSize="sm">
               Corps de métier : menuiserie
             </Text>
+            <FormControl maxW="200px">
+              <FormLabel htmlFor="model-select" fontSize="xs" color="blue.200" mb={1}>
+                Modèle
+              </FormLabel>
+              <Select
+                id="model-select"
+                value={selectedModel}
+                onChange={e => setSelectedModel(e.target.value as 'anthropic' | 'mistral')}
+                size="sm"
+                borderColor="blue.700"
+                bg="blue.800"
+                color="white"
+                _focus={{
+                  borderColor: '#45a2f8',
+                  boxShadow: 'none',
+                }}
+              >
+                <option value="mistral">Mistral</option>
+                <option value="anthropic">Anthropic (Claude)</option>
+                <option value="openai" disabled>
+                  OpenAI (ChatGPT)
+                </option>
+                <option value="deepseek" disabled>
+                  DeepSeek
+                </option>
+                <option value="gemini" disabled>
+                  Gemini
+                </option>
+                <option value="llama" disabled>
+                  Llama
+                </option>
+              </Select>
+            </FormControl>
           </VStack>
         </Container>
       </Box>
