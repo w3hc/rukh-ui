@@ -120,16 +120,74 @@ export default function Header() {
               variant="ghost"
               size="sm"
             />
+
             <MenuList>
-              {/* <Link href="/create" color="white">
-                <MenuItem fontSize="sm">Create</MenuItem>
-              </Link>
-              <Link href="/aeve" color="white">
-                <MenuItem fontSize="sm">Cover letter</MenuItem>
-              </Link> */}
               <Link href="/menuiserie" color="white">
-                <MenuItem fontSize="sm">Battapli IA</MenuItem>
+                <MenuItem fontSize="sm">Menuiserie</MenuItem>
               </Link>
+              <MenuItem fontSize="sm" isDisabled>
+                Plomberie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Électricité
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Maçonnerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Charpenterie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Couverture
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Plâtrerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Peinture
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Carrelage
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Chauffage
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Climatisation
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Isolation
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Serrurerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Métallerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Vitrerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Parqueteur
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Ravalement
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Terrassement
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                VRD
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Zinguerie
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Étanchéité
+              </MenuItem>
+              <MenuItem fontSize="sm" isDisabled>
+                Façadier
+              </MenuItem>
             </MenuList>
           </Menu>
           <LanguageSelector />
