@@ -328,7 +328,7 @@ export default function MenuiseriePage() {
   useEffect(() => {
     setMessages([
       {
-        text: "Bonjour ! Je suis Marc, votre assistant chez Battapli IA Alpha spécialisé en menuiserie. Je suis là pour vous aider à éditer un devis.\n\nComment puis-je vous aider aujourd'hui ?",
+        text: "Bonjour ! Je suis Marc, votre assistant spécialisé en menuiserie. Je suis là pour vous aider à éditer un devis.\n\nComment puis-je vous aider aujourd'hui ?",
         isUser: false,
       },
     ])
@@ -579,7 +579,7 @@ export default function MenuiseriePage() {
               Battapli IA Alpha
             </Heading>
             <Text color="blue.100" textAlign="center" fontSize="sm">
-              Corps de métier : menuiserie
+              Corps de métier : <strong>menuiserie</strong>
             </Text>
             <FormControl maxW="200px">
               <FormLabel htmlFor="model-select" fontSize="xs" color="blue.200" mb={1}>
