@@ -11,6 +11,7 @@ import { toaster } from '@/components/ui/toaster'
 import Link from 'next/link'
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi'
 import ContextCard from '@/components/ContextCard'
+import LoginButton from '@/components/LoginButton'
 import Spinner from '@/components/Spinner'
 import { useW3PK } from '@/context/W3PK'
 import { brandColors } from '@/theme'
@@ -34,7 +35,7 @@ interface DeleteState {
 }
 
 export default function DashboardPage() {
-  const { isAuthenticated, login } = useW3PK()
+  const { isAuthenticated } = useW3PK()
   const [contexts, setContexts] = useState<RukhContext[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [newContextForm, setNewContextForm] = useState<NewContextForm | null>(null)
@@ -140,15 +141,7 @@ export default function DashboardPage() {
           Dashboard
         </Heading>
         <Text color="gray.400">Please login to view your contexts.</Text>
-        <Button
-          bg={brandColors.primary}
-          color="white"
-          _hover={{ bg: brandColors.secondary }}
-          size="sm"
-          onClick={login}
-        >
-          Login
-        </Button>
+        <LoginButton size="sm" />
       </VStack>
     )
   }
