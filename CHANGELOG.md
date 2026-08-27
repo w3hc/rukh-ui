@@ -4,6 +4,7 @@
 
 ### Added
 
+- New context dialog: a **Preferred model** select and an optional **Creator name** field. The Rukh API's `CreateContextDto` has always accepted `model` and `creatorName`, but the dialog never sent either — `model` pins every `/ask` against the context to one model (`mistral`, `anthropic`, `openai`, `anthropic-web-search`), overriding the asker's own choice, and `creatorName` is stored alongside `creatorAddress` and returned by `GET /context`. Both are omitted from the request body when left empty, so the default behaviour is unchanged. Adds a `ContextModel` type to `src/utils/api.ts` (a superset of `RukhModel`, which has no web-search variant) and a `Select` component (`src/components/ui/select.tsx`) wrapping Chakra's `NativeSelect` in the `Input` styling — native rather than portalled so it behaves inside a Dialog.
 - `docs/ROADMAP.md` — shared roadmap for `rukh-ui` and the Rukh API, covering the context schema (`instructions`, `capabilities`, `audience`, `retention`, `routing`, `billing`), the three profiles it is meant to express (generalist — teachers & pupils, the priority — ZK API, deprioritised), a Next.js route layer that resolves routing between Rukh and zk-api and applies `@redactpii/node` PII redaction, Stripe billing for creators, and the milestones from privacy foundations through to the tool loop.
 
 ### Changed

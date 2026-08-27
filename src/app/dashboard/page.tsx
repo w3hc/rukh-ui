@@ -5,6 +5,7 @@ import { Box, CloseButton, Flex, Heading, HStack, SimpleGrid, Text, VStack } fro
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Field } from '@/components/ui/field'
 import { Dialog, Portal } from '@/components/ui/dialog'
 import { toaster } from '@/components/ui/toaster'
@@ -18,6 +19,7 @@ import { brandColors } from '@/theme'
 import { RukhContext } from '@/utils/contexts'
 import {
   ApiError,
+  ContextModel,
   createContext as createRemoteContext,
   deleteContext,
   listContexts,
@@ -26,7 +28,17 @@ import {
 interface NewContextForm {
   name: string
   description: string
+  creatorName: string
+  /** Empty string means "no preference": the API is left to the asker's own model choice. */
+  model: ContextModel | ''
 }
+
+const CONTEXT_MODELS: { value: ContextModel; label: string }[] = [
+  { value: 'mistral', label: 'Mistral' },
+  { value: 'anthropic', label: 'Anthropic' },
+  { value: 'openai', label: 'OpenAI' },
+  { value: 'anthropic-web-search', label: 'Anthropic (web search)' },
+]
 
 interface DeleteState {
   name: string
@@ -74,10 +86,13 @@ export default function DashboardPage() {
 
     setIsCreating(true)
     try {
+      const creatorName = newContextForm.creatorName.trim()
       await createRemoteContext(
         {
           name,
           description: newContextForm.description.trim(),
+          ...(creatorName && { creatorName }),
+          ...(newContextForm.model && { model: newContextForm.model }),
         },
         signSiwe
       )
@@ -153,8 +168,7 @@ export default function DashboardPage() {
             Contexts
           </Heading>
           <Text color="gray.400" fontSize="sm">
-            {contexts.length} {contexts.length === 1 ? 'context' : 'contexts'} · editing and
-            deleting requires signing with your wallet
+            {contexts.length} {contexts.length === 1 ? 'context' : 'contexts'}
           </Text>
         </Box>
         <Button
@@ -162,7 +176,9 @@ export default function DashboardPage() {
           variant="outline"
           borderColor={brandColors.primary}
           _hover={{ bg: 'whiteAlpha.100' }}
-          onClick={() => setNewContextForm({ name: '', description: '' })}
+          onClick={() =>
+            setNewContextForm({ name: '', description: '', creatorName: '', model: '' })
+          }
         >
           <FiPlus aria-hidden="true" /> New context
         </Button>
@@ -249,6 +265,49 @@ export default function DashboardPage() {
                       placeholder="What this context is about"
                       pl={3}
                     />
+                  </Field>
+                  <Field
+                    label="Creator name"
+                    optionalText={
+                      <Text as="span" color="gray.500" fontSize="sm" ml={1}>
+                        (optional)
+                      </Text>
+                    }
+                    helperText="Shown as the author of this context"
+                  >
+                    <Input
+                      value={newContextForm?.creatorName ?? ''}
+                      onChange={e =>
+                        setNewContextForm(f => (f ? { ...f, creatorName: e.target.value } : f))
+                      }
+                      placeholder="Your name"
+                      pl={3}
+                    />
+                  </Field>
+                  <Field
+                    label="Preferred model"
+                    optionalText={
+                      <Text as="span" color="gray.500" fontSize="sm" ml={1}>
+                        (optional)
+                      </Text>
+                    }
+                    helperText="Pins every question asked to this context to one model, overriding the asker's choice"
+                  >
+                    <Select
+                      value={newContextForm?.model ?? ''}
+                      onChange={e =>
+                        setNewContextForm(f =>
+                          f ? { ...f, model: e.target.value as ContextModel | '' } : f
+                        )
+                      }
+                    >
+                      <option value="">No preference</option>
+                      {CONTEXT_MODELS.map(m => (
+                        <option key={m.value} value={m.value}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </Select>
                   </Field>
                 </VStack>
               </Dialog.Body>

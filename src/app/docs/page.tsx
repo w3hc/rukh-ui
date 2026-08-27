@@ -171,6 +171,10 @@ export default function DocsPage() {
         <Text color="gray.300">
           Anyone can publish a context of their own. In the menu at the top right, click{' '}
           <strong>Create</strong>, give your context a name and a short description, and it is live.
+          Two optional fields come with it: a <strong>creator name</strong>, shown as the author of
+          the context, and a <strong>preferred model</strong>, which pins every question asked to
+          your context to one model instead of letting each visitor pick. Leave the model on{' '}
+          <em>No preference</em> and the choice stays with whoever is asking.
         </Text>
         <Text color="gray.300">
           From there, open your context&apos;s edit page to fill it in. You can upload documents
