@@ -4,16 +4,7 @@
 
 Web UI for [Rukh](https://github.com/w3hc/rukh) — build your own AI with personalized contexts.
 
-## Pages
-
-- `/` — lists available contexts grouped into four categories (Free, ZK API, For kids, Agentic); selecting one opens its interaction page
-- `/[context]` — chat with the selected context
-- `/[context]/edit` — add, edit, or delete the documents and links of a context
-- `/dashboard` — overview of your contexts (create, open, edit, delete)
-
-> The Rukh API is not wired up yet: pages currently run on mock data defined in `src/utils/contexts.ts`, whose types mirror the Rukh context DTOs.
-
-## Fork
+Live at **[rukh.it](https://rukh.it)**.
 
 ## Install
 
@@ -36,3 +27,7 @@ pnpm build
 ## License
 
 GPL-3.0
+
+## Contact
+
+https://julienberanger.com/contact

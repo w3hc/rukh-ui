@@ -6,6 +6,19 @@
 
 - `docs/ROADMAP.md` — shared roadmap for `rukh-ui` and the Rukh API, covering the context schema (`instructions`, `capabilities`, `audience`, `retention`, `routing`, `billing`), the three profiles it is meant to express (generalist — teachers & pupils, the priority — ZK API, deprioritised), a Next.js route layer that resolves routing between Rukh and zk-api and applies `@redactpii/node` PII redaction, Stripe billing for creators, and the milestones from privacy foundations through to the tool loop.
 
+### Changed
+
+- Settings page, `PasswordModal` and `Spinner` realigned with the genji template: all of their user-facing text now comes from `src/translations/index.ts` instead of being hardcoded in English, so `/settings` is fully localized in the 10 supported locales. This also drops the AI security-inspection panel (`inspect()` from `w3pk`), which genji disabled upstream; `window.w3pk.inspect()` / `inspectNow()` are still exposed from `src/context/W3PK.tsx` for console use.
+- Translations completed from genji: the `settings` section (~280 keys) and the `passwordModal` section added across all 10 locales, plus `common.srLoadingText`, `common.loading`, `common.notAvailable` and `common.close`, and `home.messageSignedTitle` / `home.messageSignedDescription`. Rukh's own `navigation` (`dashboard`, `docs`, `settings`) is kept over genji's (`about`, `settings`), and genji's `about` section is omitted — there is no `/about` route here.
+- Dependencies realigned with the genji template (`3.1.0`): `next` and `eslint-config-next` `^16.2.10` → `^16.3.1`, `react`/`react-dom` `^19.2.7` → `^19.2.8`, `@chakra-ui/react` `^3.36.0` → `^3.36.1`, and `@types/node`, `@types/react`, `@types/react-dom` and `prettier` bumped to match.
+
+### Fixed
+
+- Build verification on `/settings` failed with `TypeError: Failed to fetch`. `getCurrentBuildHash()` fetches the published bundle from `https://unpkg.com/w3pk@<version>/dist` to hash it, but `unpkg.com` was missing from the CSP `connect-src` in `next.config.ts`, so the browser blocked the request before it left the page. Added it. The same gap exists upstream in genji.
+- Restored the security headers `next.config.ts` lost in the initial refactor. The file had been reduced to the `optimizePackageImports` experiment alone, so the app shipped with no Content-Security-Policy, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` or HSTS — a gap that only shows up in production. Genji's block is back, with `connect-src` unioned with the Rukh API origin derived from `NEXT_PUBLIC_RUKH_API_URL` (defaulting to `http://localhost:3000` in development) so cross-origin API calls are not blocked by the policy.
+- Restored `common.register` across all 10 locales; the translation transposition dropped it. It is currently unused (`LoginButton` renders `t.header.createAccount`), so it can be removed deliberately if it is genuinely dead.
+- Official app URL is now `https://rukh.it`: `metadataBase` in `src/app/metadata.ts` pointed at `https://w3pk.w3hc.org` (a leftover from the w3pk template), so every relative Open Graph / Twitter image resolved against the wrong host; `openGraph.url` added alongside it, and the `/docs` share-link example falls back to `https://rukh.it` before hydration. The Rukh API's own URL (`NEXT_PUBLIC_RUKH_API_URL`, `https://rukh.w3hc.org`) is unchanged.
+
 ## [0.2.0] - 2026-08-26
 
 ### Security
