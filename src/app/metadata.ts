@@ -1,24 +1,24 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://rukh-ui.netlify.app'),
-  title: 'My Faithful Assistant',
-  description: 'Build your own assistant in a few seconds.',
+  metadataBase: new URL('https://w3pk.w3hc.org'),
 
-  keywords: ['Web3', 'Next.js', 'Ethereum', 'DApp', 'Blockchain', 'Wallet'],
-  authors: [{ name: 'Julien', url: 'https://github.com/julienbrg' }],
+  title: 'Rukh',
+  description: 'Build your own AI',
+
+  keywords: ['Web3', 'Ethereum'],
+  authors: [{ name: 'W3HC', url: 'https://github.com/w3hc' }],
 
   openGraph: {
-    title: 'My Faithful Assistant',
-    description: 'Build your own assistant in a few seconds.',
-    url: 'https://rukh-ui.netlify.app',
-    siteName: 'Rukh AI',
+    title: 'Rukh',
+    description: 'Build your own AI',
+    siteName: 'Rukh',
     images: [
       {
         url: '/huangshan.png',
         width: 1200,
         height: 630,
-        alt: 'My Faithful Assistant',
+        alt: 'Build your own AI',
       },
     ],
     locale: 'en_US',
@@ -27,8 +27,8 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'My Faithful Assistant',
-    description: 'Build your own assistant in a few seconds.',
+    title: 'Rukh',
+    description: 'Build your own AI',
     images: ['/huangshan.png'],
     creator: '@julienbrg',
   },

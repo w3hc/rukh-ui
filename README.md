@@ -1,8 +1,19 @@
-# Rukh UI
+[![WCAG 2.1 AA](https://img.shields.io/badge/WCAG-2.1%20AA-green.svg)](https://www.w3.org/WAI/WCAG21/quickref/?versions=2.1&levels=aa)
 
-Build your own assistant in a few seconds.
+# rukh-ui
 
-Interacts with [Rukh API](https://github.com/w3hc/rukh) which supports Mistral and Claude 3.7.
+Web UI for [Rukh](https://github.com/w3hc/rukh) — build your own AI with personalized contexts.
+
+## Pages
+
+- `/` — lists available contexts grouped into four categories (Free, ZK API, For kids, Agentic); selecting one opens its interaction page
+- `/[context]` — chat with the selected context
+- `/[context]/edit` — add, edit, or delete the documents and links of a context
+- `/dashboard` — overview of your contexts (create, open, edit, delete)
+
+> The Rukh API is not wired up yet: pages currently run on mock data defined in `src/utils/contexts.ts`, whose types mirror the Rukh context DTOs.
+
+## Fork
 
 ## Install
 
@@ -12,20 +23,16 @@ pnpm i
 
 ## Run
 
-Create a `.env` file:
-
-```
-cp .env.template .env
-```
-
-Add your own keys in the `.env` file (you can get it in your [Reown dashboard](https://cloud.reown.com/)), then:
-
 ```bash
 pnpm dev
 ```
 
-## Support
+## Build
 
-Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-), [Element](https://matrix.to/#/@julienbrg:matrix.org), [Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy), [Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg), [Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
+```bash
+pnpm build
+```
 
-<img src="https://bafkreid5xwxz4bed67bxb2wjmwsec4uhlcjviwy7pkzwoyu5oesjd3sp64.ipfs.w3s.link" alt="built-with-ethereum-w3hc" width="100"/>
+## License
+
+GPL-3.0

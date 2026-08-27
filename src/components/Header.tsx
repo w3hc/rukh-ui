@@ -1,40 +1,27 @@
 'use client'
 
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  IconButton,
-} from '@chakra-ui/react'
-import { useAppKit } from '@reown/appkit/react'
-import { useAppKitAccount, useDisconnect } from '@reown/appkit/react'
+import { Box, Container, Flex, Heading, Portal } from '@chakra-ui/react'
+import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
+import { MenuRoot, MenuTrigger, MenuPositioner, MenuContent, MenuItem } from '@/components/ui/menu'
 import Link from 'next/link'
-import { HamburgerIcon, SunIcon, MoonIcon } from '@chakra-ui/icons'
+import { HiMenu } from 'react-icons/hi'
 import LanguageSelector from './LanguageSelector'
+import LoginButton from './LoginButton'
 import { useTranslation } from '@/hooks/useTranslation'
-import { useTheme } from '@/context/ThemeContext'
+import { useW3PK } from '@/context/W3PK'
 import { useState, useEffect } from 'react'
+import { brandColors } from '@/theme'
 
 export default function Header() {
-  const { open } = useAppKit()
-  const { isConnected, address } = useAppKitAccount()
-  const { disconnect } = useDisconnect()
+  const { isAuthenticated, user, isLoading, logout } = useW3PK()
   const t = useTranslation()
-  const { mode, toggleTheme } = useTheme()
 
   const [scrollPosition, setScrollPosition] = useState(0)
 
-  const slideThreshold = 50
-  const leftSlideValue =
-    scrollPosition <= slideThreshold ? 0 : Math.min((scrollPosition - slideThreshold) * 0.5, 100)
-
-  const rightSlideValue =
-    scrollPosition <= slideThreshold ? 0 : Math.min((scrollPosition - slideThreshold) * 0.5, 100)
+  const shouldSlide = scrollPosition > 0
+  const leftSlideValue = shouldSlide ? 2000 : 0
+  const rightSlideValue = shouldSlide ? 2000 : 0
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,158 +32,96 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleConnect = () => {
-    try {
-      open({ view: 'Connect' })
-    } catch (error) {
-      console.error('Connection error:', error)
-    }
-  }
-
-  const handleDisconnect = () => {
-    try {
-      disconnect()
-    } catch (error) {
-      console.error('Disconnect error:', error)
-    }
+  const handleLogout = () => {
+    logout()
   }
 
   return (
-    <Box
-      as="header"
-      py={4}
-      position="fixed"
-      w="100%"
-      top={0}
-      zIndex={10}
-      bg={mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)'}
-      backdropFilter="blur(10px)"
-      borderBottom="1px solid"
-      borderColor={mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.200'}
-    >
-      <Flex justify="space-between" align="center" px={4}>
-        <Box
-          transform={`translateX(-${leftSlideValue}px)`}
-          opacity={Math.max(1 - leftSlideValue / 100, 0)}
-          transition="all 0.5s ease-in-out"
-        >
-          <Link href="/">
-            <Heading as="h3" size="md" textAlign="center">
-              Mon assistant
-            </Heading>
-          </Link>
-        </Box>
+    <>
+      <Box as="header" py={4} position="fixed" w="100%" top={0} zIndex={10} overflow="visible">
+        <Container maxW="100%" px={{ base: 4, md: 6 }} overflow="visible">
+          <Flex
+            as="nav"
+            aria-label={t.header.mainNavAriaLabel}
+            justify="space-between"
+            align="center"
+            overflow="visible"
+          >
+            <Box
+              transform={`translateX(-${leftSlideValue}px)`}
+              transition="transform 0.5s ease-in-out"
+              suppressHydrationWarning
+            >
+              <Flex align="center" gap={3}>
+                <Link href="/">
+                  <Flex align="center" gap={5}>
+                    <Heading as="h3" size="md" textAlign="center">
+                      Rukh
+                    </Heading>
+                  </Flex>
+                </Link>
+              </Flex>
+            </Box>
 
-        <Flex
-          gap={2}
-          align="center"
-          transform={`translateX(${rightSlideValue}px)`}
-          opacity={Math.max(1 - rightSlideValue / 100, 0)}
-          transition="all 0.5s ease-in-out"
-        >
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Options"
-              icon={<HamburgerIcon />}
-              variant="ghost"
-              size="sm"
-              color={mode === 'dark' ? 'white' : 'black'}
-              _hover={{
-                bg: mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.100',
-              }}
-            />
-
-            <MenuList bg={mode === 'dark' ? 'gray.800' : 'white'}>
-              <Link href="/menuiserie">
-                <MenuItem
-                  fontSize="sm"
-                  _hover={{ bg: mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.100' }}
-                >
-                  Menuiserie
-                </MenuItem>
-              </Link>
-              <MenuItem fontSize="sm" isDisabled>
-                Plomberie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Électricité
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Maçonnerie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Charpenterie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Couverture
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Plâtrerie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Peinture
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Carrelage
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Chauffage
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Climatisation
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Isolation
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Serrurerie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Métallerie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Vitrerie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Parqueteur
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Ravalement
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Terrassement
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                VRD
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Zinguerie
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Étanchéité
-              </MenuItem>
-              <MenuItem fontSize="sm" isDisabled>
-                Façadier
-              </MenuItem>
-            </MenuList>
-          </Menu>
-
-          <LanguageSelector />
-
-          <IconButton
-            aria-label="Toggle theme"
-            icon={mode === 'dark' ? <SunIcon /> : <MoonIcon />}
-            onClick={toggleTheme}
-            size="xs"
-            variant="ghost"
-            color="#FDD69D"
-            _hover={{
-              bg: mode === 'dark' ? 'whiteAlpha.200' : 'blackAlpha.100',
-            }}
-          />
-        </Flex>
-      </Flex>
-    </Box>
+            <Flex
+              gap={2}
+              align="center"
+              transform={`translateX(${rightSlideValue}px)`}
+              transition="transform 0.5s ease-in-out"
+              suppressHydrationWarning
+            >
+              {!isAuthenticated ? (
+                <LoginButton size="xs" px={4} />
+              ) : (
+                <>
+                  {/* <Box>
+                    <Text fontSize="sm" color="gray.300">
+                      {user?.displayName || user?.username}
+                    </Text>
+                  </Box> */}
+                  <Button
+                    bg={brandColors.primary}
+                    color="white"
+                    _hover={{
+                      bg: brandColors.secondary,
+                    }}
+                    onClick={handleLogout}
+                    size="xs"
+                    ml={4}
+                    px={4}
+                  >
+                    {t.common.logout}
+                  </Button>
+                </>
+              )}
+              <MenuRoot>
+                <MenuTrigger asChild>
+                  <IconButton aria-label={t.header.optionsAriaLabel} variant="ghost" size="sm">
+                    <HiMenu />
+                  </IconButton>
+                </MenuTrigger>
+                <Portal>
+                  <MenuPositioner>
+                    <MenuContent minWidth="auto">
+                      <Link href="/dashboard" color="white">
+                        <MenuItem value="dashboard" fontSize="md" px={4} py={3}>
+                          Dashboard
+                        </MenuItem>
+                      </Link>
+                      <Link href="/settings" color="white">
+                        <MenuItem value="settings" fontSize="md" px={4} py={3}>
+                          {t.navigation.settings}
+                        </MenuItem>
+                      </Link>
+                    </MenuContent>
+                  </MenuPositioner>
+                </Portal>
+              </MenuRoot>
+              <LanguageSelector />
+            </Flex>
+          </Flex>
+        </Container>
+      </Box>
+    </>
   )
 }
