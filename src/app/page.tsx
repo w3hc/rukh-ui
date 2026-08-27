@@ -9,11 +9,28 @@ import Spinner from '@/components/Spinner'
 import { brandColors } from '@/theme'
 import { RukhContext } from '@/utils/contexts'
 import { ApiError, listContexts } from '@/utils/api'
+import { useW3PK } from '@/context/W3PK'
 
 export default function Home() {
   const [contexts, setContexts] = useState<RukhContext[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { isAuthenticated, deriveWallet } = useW3PK()
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    deriveWallet('STANDARD', 'MAIN')
+      .then(({ address }) => {
+        if (!cancelled) console.log('STANDARD address:', address)
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to derive STANDARD address:', err)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, deriveWallet])
 
   useEffect(() => {
     let cancelled = false

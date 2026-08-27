@@ -1,7 +1,8 @@
 /**
  * Shared context types and formatting helpers.
  * The Rukh API only exposes `name` and `description` publicly (GET /context);
- * everything else (files, links, size) requires the context password.
+ * everything else (files, links, size) requires a SIWE signature from the
+ * context's creator wallet (see useW3PK().signSiwe).
  */
 
 export type { ContextSummary as RukhContext } from './api'

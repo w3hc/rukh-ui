@@ -28,6 +28,8 @@ import { toaster } from '@/components/ui/toaster'
 import Link from 'next/link'
 import { FiArrowLeft, FiEdit2, FiFileText, FiLink, FiLock, FiPlus, FiTrash2 } from 'react-icons/fi'
 import Spinner from '@/components/Spinner'
+import LoginButton from '@/components/LoginButton'
+import { useW3PK } from '@/context/W3PK'
 import { brandColors } from '@/theme'
 import { formatFileSize } from '@/utils/contexts'
 import {
@@ -64,11 +66,11 @@ type DeleteTarget = { type: 'document'; name: string } | { type: 'link'; url: st
 export default function ContextEditPage() {
   const params = useParams<{ context: string }>()
   const contextName = params.context
+  const { isAuthenticated, signSiwe } = useW3PK()
 
   const [contextExists, setContextExists] = useState<boolean | undefined>(undefined) // undefined = loading
-  const [password, setPassword] = useState<string | null>(null)
-  const [passwordInput, setPasswordInput] = useState('')
-  const [isUnlocking, setIsUnlocking] = useState(false)
+  const [filesStatus, setFilesStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [filesError, setFilesError] = useState<string | null>(null)
 
   const [documents, setDocuments] = useState<RemoteContextFile[]>([])
   const [links, setLinks] = useState<RemoteContextLink[]>([])
@@ -91,40 +93,47 @@ export default function ContextEditPage() {
     }
   }, [contextName])
 
-  const refresh = async (pw: string) => {
+  const refresh = async () => {
     const [files, contextLinks] = await Promise.all([
-      listContextFiles(contextName, pw),
-      listLinks(contextName, pw),
+      listContextFiles(contextName, signSiwe),
+      listLinks(contextName, signSiwe),
     ])
     setDocuments(files)
     setLinks(contextLinks)
   }
 
-  const unlock = async () => {
-    if (!passwordInput.trim()) return
-    setIsUnlocking(true)
-    try {
-      await refresh(passwordInput)
-      setPassword(passwordInput)
-      setPasswordInput('')
-    } catch (err) {
-      toaster.create({
-        title: err instanceof ApiError && err.status === 401 ? 'Invalid password' : 'Error',
-        description: err instanceof ApiError ? err.message : 'Could not unlock this context.',
-        type: 'error',
-        duration: 4000,
+  useEffect(() => {
+    if (!contextExists || !isAuthenticated) return
+    let cancelled = false
+    Promise.all([listContextFiles(contextName, signSiwe), listLinks(contextName, signSiwe)])
+      .then(([files, contextLinks]) => {
+        if (cancelled) return
+        setDocuments(files)
+        setLinks(contextLinks)
+        setFilesStatus('ready')
       })
-    } finally {
-      setIsUnlocking(false)
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setFilesError(
+          err instanceof ApiError && err.status === 401
+            ? "You're not the creator of this context, so you can't manage it."
+            : err instanceof ApiError
+              ? err.message
+              : 'Could not load this context.'
+        )
+        setFilesStatus('error')
+      })
+    return () => {
+      cancelled = true
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contextExists, isAuthenticated, contextName])
 
   const handleAuthError = (err: unknown) => {
     if (err instanceof ApiError && err.status === 401) {
-      setPassword(null)
       toaster.create({
-        title: 'Invalid password',
-        description: 'Please unlock this context again.',
+        title: "You're not the creator of this context",
+        description: 'Only the wallet that created it can make changes.',
         type: 'error',
         duration: 4000,
       })
@@ -157,39 +166,45 @@ export default function ContextEditPage() {
     )
   }
 
-  if (!password) {
+  if (!isAuthenticated) {
     return (
       <VStack gap={4} py={20} textAlign="center">
         <FiLock size={28} color={brandColors.accent} />
         <Heading as="h1" size="lg">
-          Unlock &ldquo;{contextName}&rdquo;
+          Sign in to edit &ldquo;{contextName}&rdquo;
         </Heading>
         <Text color="gray.400" fontSize="sm">
-          Enter the context password to manage its documents and links.
+          Managing documents and links requires signing with the wallet that created this context.
         </Text>
-        <Box w="full" maxW="xs">
-          <Input
-            type="password"
-            value={passwordInput}
-            onChange={e => setPasswordInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && unlock()}
-            placeholder="Context password"
-            pl={3}
-            autoFocus
-          />
-        </Box>
-        <Button
-          bg={brandColors.primary}
-          color="white"
-          _hover={{ bg: brandColors.secondary }}
-          onClick={unlock}
-          loading={isUnlocking}
-          disabled={!passwordInput.trim()}
-        >
-          Unlock
-        </Button>
+        <LoginButton size="sm" />
         <Link href={`/${contextName}`}>
           <Button variant="ghost" size="sm">
+            <FiArrowLeft aria-hidden="true" /> Back to chat
+          </Button>
+        </Link>
+      </VStack>
+    )
+  }
+
+  if (filesStatus === 'loading') {
+    return (
+      <Box textAlign="center" py={20}>
+        <Spinner />
+      </Box>
+    )
+  }
+
+  if (filesStatus === 'error') {
+    return (
+      <VStack gap={4} py={20} textAlign="center">
+        <Heading as="h1" size="lg">
+          Can&rsquo;t manage &ldquo;{contextName}&rdquo;
+        </Heading>
+        <Text color="gray.400" fontSize="sm">
+          {filesError}
+        </Text>
+        <Link href={`/${contextName}`}>
+          <Button variant="outline" size="sm">
             <FiArrowLeft aria-hidden="true" /> Back to chat
           </Button>
         </Link>
@@ -215,7 +230,7 @@ export default function ContextEditPage() {
       loadingContent: true,
     })
     try {
-      const content = await getFileContent(contextName, document.name, password)
+      const content = await getFileContent(contextName, document.name, signSiwe)
       setDocumentForm(f =>
         f && f.originalName === document.name ? { ...f, content, loadingContent: false } : f
       )
@@ -245,13 +260,13 @@ export default function ContextEditPage() {
         filename: name,
         content: documentForm.content,
         description: documentForm.description.trim(),
-        password,
+        signSiwe,
       })
       // Renaming: the old file stays around under its previous name, remove it.
       if (documentForm.originalName && documentForm.originalName !== name) {
-        await deleteFile(contextName, documentForm.originalName, password)
+        await deleteFile(contextName, documentForm.originalName, signSiwe)
       }
-      await refresh(password)
+      await refresh()
       toaster.create({
         title: documentForm.originalName ? 'Document updated' : 'Document added',
         description: name,
@@ -282,7 +297,7 @@ export default function ContextEditPage() {
     try {
       // No update endpoint: remove the previous entry (by its original URL) before adding the new one.
       if (linkForm.originalUrl) {
-        await deleteLink(contextName, linkForm.originalUrl, password)
+        await deleteLink(contextName, linkForm.originalUrl, signSiwe)
       }
       await addLink(
         contextName,
@@ -291,9 +306,9 @@ export default function ContextEditPage() {
           url,
           description: linkForm.description.trim() || undefined,
         },
-        password
+        signSiwe
       )
-      await refresh(password)
+      await refresh()
       toaster.create({
         title: linkForm.originalUrl ? 'Link updated' : 'Link added',
         description: url,
@@ -320,11 +335,11 @@ export default function ContextEditPage() {
     setIsSaving(true)
     try {
       if (deleteTarget.type === 'document') {
-        await deleteFile(contextName, deleteTarget.name, password)
+        await deleteFile(contextName, deleteTarget.name, signSiwe)
       } else {
-        await deleteLink(contextName, deleteTarget.url, password)
+        await deleteLink(contextName, deleteTarget.url, signSiwe)
       }
-      await refresh(password)
+      await refresh()
       toaster.create({
         title: deleteTarget.type === 'document' ? 'Document deleted' : 'Link deleted',
         type: 'info',

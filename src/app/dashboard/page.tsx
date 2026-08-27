@@ -26,16 +26,14 @@ import {
 interface NewContextForm {
   name: string
   description: string
-  password: string
 }
 
 interface DeleteState {
   name: string
-  password: string
 }
 
 export default function DashboardPage() {
-  const { isAuthenticated } = useW3PK()
+  const { isAuthenticated, signSiwe } = useW3PK()
   const [contexts, setContexts] = useState<RukhContext[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [newContextForm, setNewContextForm] = useState<NewContextForm | null>(null)
@@ -73,15 +71,16 @@ export default function DashboardPage() {
     if (!newContextForm) return
     const name = newContextForm.name.trim()
     if (!isNameValid(name) || contexts.some(c => c.name === name)) return
-    if (!newContextForm.password.trim()) return
 
     setIsCreating(true)
     try {
-      await createRemoteContext({
-        name,
-        password: newContextForm.password,
-        description: newContextForm.description.trim(),
-      })
+      await createRemoteContext(
+        {
+          name,
+          description: newContextForm.description.trim(),
+        },
+        signSiwe
+      )
       setContexts(prev =>
         [...prev, { name, description: newContextForm.description.trim() }].sort((a, b) =>
           a.name.localeCompare(b.name)
@@ -107,10 +106,10 @@ export default function DashboardPage() {
   }
 
   const confirmDelete = async () => {
-    if (!contextToDelete || !contextToDelete.password.trim()) return
+    if (!contextToDelete) return
     setIsDeleting(true)
     try {
-      await deleteContext(contextToDelete.name, contextToDelete.password)
+      await deleteContext(contextToDelete.name, signSiwe)
       setContexts(prev => prev.filter(c => c.name !== contextToDelete.name))
       toaster.create({
         title: 'Context deleted',
@@ -123,7 +122,7 @@ export default function DashboardPage() {
       toaster.create({
         title:
           err instanceof ApiError && err.status === 401
-            ? 'Invalid password'
+            ? "You're not the creator of this context"
             : 'Could not delete context',
         description: err instanceof ApiError ? err.message : undefined,
         type: 'error',
@@ -155,7 +154,7 @@ export default function DashboardPage() {
           </Heading>
           <Text color="gray.400" fontSize="sm">
             {contexts.length} {contexts.length === 1 ? 'context' : 'contexts'} · editing and
-            deleting requires the context password
+            deleting requires signing with your wallet
           </Text>
         </Box>
         <Button
@@ -163,7 +162,7 @@ export default function DashboardPage() {
           variant="outline"
           borderColor={brandColors.primary}
           _hover={{ bg: 'whiteAlpha.100' }}
-          onClick={() => setNewContextForm({ name: '', description: '', password: '' })}
+          onClick={() => setNewContextForm({ name: '', description: '' })}
         >
           <FiPlus aria-hidden="true" /> New context
         </Button>
@@ -202,7 +201,7 @@ export default function DashboardPage() {
                     variant="ghost"
                     size="sm"
                     colorPalette="red"
-                    onClick={() => setContextToDelete({ name: context.name, password: '' })}
+                    onClick={() => setContextToDelete({ name: context.name })}
                   >
                     <FiTrash2 />
                   </IconButton>
@@ -251,17 +250,6 @@ export default function DashboardPage() {
                       pl={3}
                     />
                   </Field>
-                  <Field label="Password" helperText="Required to edit the context later">
-                    <Input
-                      type="password"
-                      value={newContextForm?.password ?? ''}
-                      onChange={e =>
-                        setNewContextForm(f => (f ? { ...f, password: e.target.value } : f))
-                      }
-                      placeholder="••••••••"
-                      pl={3}
-                    />
-                  </Field>
                 </VStack>
               </Dialog.Body>
               <Dialog.Footer gap={3} pt={6}>
@@ -274,13 +262,9 @@ export default function DashboardPage() {
                   _hover={{ bg: brandColors.secondary }}
                   onClick={createContext}
                   loading={isCreating}
-                  disabled={
-                    !newContextForm ||
-                    !isNameValid(newContextForm.name) ||
-                    !newContextForm.password.trim()
-                  }
+                  disabled={!newContextForm || !isNameValid(newContextForm.name)}
                 >
-                  Create
+                  Sign &amp; create
                 </Button>
               </Dialog.Footer>
               <Dialog.CloseTrigger asChild>
@@ -307,34 +291,17 @@ export default function DashboardPage() {
                 <VStack gap={4} align="stretch">
                   <Text fontSize="sm" color="gray.400">
                     &ldquo;{contextToDelete?.name}&rdquo; and all its documents and links will be
-                    removed. This cannot be undone.
+                    removed. This cannot be undone. You&rsquo;ll be asked to sign with your wallet
+                    to confirm.
                   </Text>
-                  <Field label="Password">
-                    <Input
-                      type="password"
-                      value={contextToDelete?.password ?? ''}
-                      onChange={e =>
-                        setContextToDelete(d => (d ? { ...d, password: e.target.value } : d))
-                      }
-                      onKeyDown={e => e.key === 'Enter' && confirmDelete()}
-                      placeholder="Context password"
-                      pl={3}
-                      autoFocus
-                    />
-                  </Field>
                 </VStack>
               </Dialog.Body>
               <Dialog.Footer gap={3} pt={6}>
                 <Dialog.ActionTrigger asChild>
                   <Button variant="outline">Cancel</Button>
                 </Dialog.ActionTrigger>
-                <Button
-                  colorPalette="red"
-                  onClick={confirmDelete}
-                  loading={isDeleting}
-                  disabled={!contextToDelete?.password.trim()}
-                >
-                  Delete
+                <Button colorPalette="red" onClick={confirmDelete} loading={isDeleting}>
+                  Sign &amp; delete
                 </Button>
               </Dialog.Footer>
               <Dialog.CloseTrigger asChild>

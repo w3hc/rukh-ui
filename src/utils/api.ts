@@ -38,6 +38,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T
 }
 
+async function requestText(path: string, init?: RequestInit): Promise<string> {
+  let res: Response
+  try {
+    res = await fetch(`${API_URL}${path}`, init)
+  } catch {
+    throw new ApiError(0, 'Could not reach the Rukh API. Is it running?')
+  }
+
+  if (!res.ok) {
+    let message = res.statusText
+    try {
+      const body = await res.json()
+      if (Array.isArray(body?.message)) message = body.message.join(', ')
+      else if (typeof body?.message === 'string') message = body.message
+    } catch {
+      // response had no JSON body; keep statusText
+    }
+    throw new ApiError(res.status, message)
+  }
+
+  return res.text()
+}
+
 // ---------------------------------------------------------------------------
 // Ask
 // ---------------------------------------------------------------------------
@@ -95,6 +118,31 @@ export interface ContextSummary {
   description: string
 }
 
+/**
+ * Matches useW3PK().signSiwe(): signs a SIWE message authorizing one exact
+ * request. Every context-mutating/reading call below takes this instead of
+ * a precomputed signature so the path it signs can never drift from the
+ * path it actually requests.
+ */
+export type SignSiwe = (
+  method: string,
+  path: string
+) => Promise<{ message: string; signature: string; address: string }>
+
+interface SiweAuth {
+  message: string
+  signature: string
+}
+
+function siweHeaders(siwe: SiweAuth): Record<string, string> {
+  // HTTP header values can't contain raw newlines, and a SIWE message is
+  // multi-line, so it travels percent-encoded (the guard decodes it back).
+  return {
+    'x-siwe-message': encodeURIComponent(siwe.message),
+    'x-siwe-signature': siwe.signature,
+  }
+}
+
 export interface RemoteContextFile {
   name: string
   description: string
@@ -113,93 +161,115 @@ export function listContexts(): Promise<ContextSummary[]> {
   return request('/context')
 }
 
-export function createContext(input: {
-  name: string
-  password: string
-  description?: string
-}): Promise<{ message: string; path: string }> {
-  return request('/context', {
+export async function createContext(
+  input: {
+    name: string
+    creatorName?: string
+    description?: string
+  },
+  signSiwe: SignSiwe
+): Promise<{ message: string; path: string }> {
+  const path = '/context'
+  const siwe = await signSiwe('POST', path)
+  return request(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    headers: { 'Content-Type': 'application/json', ...siweHeaders(siwe) },
+    body: JSON.stringify({ ...input, creatorAddress: siwe.address }),
   })
 }
 
-export function deleteContext(name: string, password: string): Promise<{ message: string }> {
-  return request(`/context/${encodeURIComponent(name)}`, {
-    method: 'DELETE',
-    headers: { 'x-context-password': password },
-  })
+export async function deleteContext(
+  name: string,
+  signSiwe: SignSiwe
+): Promise<{ message: string }> {
+  const path = `/context/${encodeURIComponent(name)}`
+  const siwe = await signSiwe('DELETE', path)
+  return request(path, { method: 'DELETE', headers: siweHeaders(siwe) })
 }
 
-export function listContextFiles(name: string, password: string): Promise<RemoteContextFile[]> {
-  return request(`/context/${encodeURIComponent(name)}/files`, {
-    headers: { 'x-context-password': password },
-  })
+export async function listContextFiles(
+  name: string,
+  signSiwe: SignSiwe
+): Promise<RemoteContextFile[]> {
+  const path = `/context/${encodeURIComponent(name)}/files`
+  const siwe = await signSiwe('GET', path)
+  return request(path, { headers: siweHeaders(siwe) })
 }
 
-export function getFileContent(name: string, filename: string, password: string): Promise<string> {
-  return request(`/context/${encodeURIComponent(name)}/file/${encodeURIComponent(filename)}`, {
-    headers: { 'x-context-password': password },
-  })
+export async function getFileContent(
+  name: string,
+  filename: string,
+  signSiwe: SignSiwe
+): Promise<string> {
+  const path = `/context/${encodeURIComponent(name)}/file/${encodeURIComponent(filename)}`
+  const siwe = await signSiwe('GET', path)
+  return requestText(path, { headers: siweHeaders(siwe) })
 }
 
-export function uploadFile(input: {
+export async function uploadFile(input: {
   contextName: string
   filename: string
   content: string
   description?: string
-  password: string
+  signSiwe: SignSiwe
 }): Promise<{ message: string; path: string; wasOverwritten: boolean }> {
+  const path = '/context/upload'
+  const siwe = await input.signSiwe('POST', path)
   const form = new FormData()
   form.set('contextName', input.contextName)
   if (input.description) form.set('fileDescription', input.description)
   form.set('file', new Blob([input.content], { type: 'text/markdown' }), input.filename)
-  return request('/context/upload', {
+  return request(path, {
     method: 'POST',
-    headers: { 'x-context-password': input.password },
+    headers: siweHeaders(siwe),
     body: form,
   })
 }
 
-export function deleteFile(
+export async function deleteFile(
   name: string,
   filename: string,
-  password: string
+  signSiwe: SignSiwe
 ): Promise<{ message: string }> {
-  return request(`/context/${encodeURIComponent(name)}/file`, {
+  const path = `/context/${encodeURIComponent(name)}/file`
+  const siwe = await signSiwe('DELETE', path)
+  return request(path, {
     method: 'DELETE',
-    headers: { 'x-context-password': password, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...siweHeaders(siwe) },
     body: JSON.stringify({ filename }),
   })
 }
 
-export function listLinks(name: string, password: string): Promise<RemoteContextLink[]> {
-  return request(`/context/${encodeURIComponent(name)}/links`, {
-    headers: { 'x-context-password': password },
-  })
+export async function listLinks(name: string, signSiwe: SignSiwe): Promise<RemoteContextLink[]> {
+  const path = `/context/${encodeURIComponent(name)}/links`
+  const siwe = await signSiwe('GET', path)
+  return request(path, { headers: siweHeaders(siwe) })
 }
 
-export function addLink(
+export async function addLink(
   name: string,
   link: { title: string; url: string; description?: string },
-  password: string
+  signSiwe: SignSiwe
 ): Promise<{ success: boolean; link: RemoteContextLink }> {
-  return request(`/context/${encodeURIComponent(name)}/link`, {
+  const path = `/context/${encodeURIComponent(name)}/link`
+  const siwe = await signSiwe('POST', path)
+  return request(path, {
     method: 'POST',
-    headers: { 'x-context-password': password, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...siweHeaders(siwe) },
     body: JSON.stringify(link),
   })
 }
 
-export function deleteLink(
+export async function deleteLink(
   name: string,
   url: string,
-  password: string
+  signSiwe: SignSiwe
 ): Promise<{ success: boolean; message: string }> {
-  return request(`/context/${encodeURIComponent(name)}/link`, {
+  const path = `/context/${encodeURIComponent(name)}/link`
+  const siwe = await signSiwe('DELETE', path)
+  return request(path, {
     method: 'DELETE',
-    headers: { 'x-context-password': password, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...siweHeaders(siwe) },
     body: JSON.stringify({ url }),
   })
 }
