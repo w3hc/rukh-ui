@@ -42,7 +42,7 @@ export default function Header() {
         <Container maxW="100%" px={{ base: 4, md: 6 }} overflow="visible">
           <Flex
             as="nav"
-            aria-label="Main navigation"
+            aria-label={t.header.mainNavAriaLabel}
             justify="space-between"
             align="center"
             overflow="visible"
@@ -96,7 +96,7 @@ export default function Header() {
               )}
               <MenuRoot>
                 <MenuTrigger asChild>
-                  <IconButton aria-label="Options" variant="ghost" size="sm">
+                  <IconButton aria-label={t.header.optionsAriaLabel} variant="ghost" size="sm">
                     <HiMenu />
                   </IconButton>
                 </MenuTrigger>
