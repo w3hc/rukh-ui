@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://w3pk.w3hc.org'),
+  metadataBase: new URL('https://rukh.it'),
 
   title: 'Rukh',
   description: 'Build your own AI',
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     title: 'Rukh',
     description: 'Build your own AI',
     siteName: 'Rukh',
+    url: 'https://rukh.it',
     images: [
       {
         url: '/huangshan.png',

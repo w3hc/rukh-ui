@@ -161,11 +161,20 @@ export function listContexts(): Promise<ContextSummary[]> {
   return request('/context')
 }
 
+/**
+ * Models a context can be pinned to. Mirrors CONTEXT_MODELS in the Rukh API
+ * (`src/dto/context.dto.ts`); it is a superset of `RukhModel`, since a context
+ * can also force the web-search variant.
+ */
+export type ContextModel = 'mistral' | 'anthropic' | 'openai' | 'anthropic-web-search'
+
 export async function createContext(
   input: {
     name: string
     creatorName?: string
     description?: string
+    /** Forces this model on every /ask against the context, overriding the request's own. */
+    model?: ContextModel
   },
   signSiwe: SignSiwe
 ): Promise<{ message: string; path: string }> {
