@@ -2,13 +2,16 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { Badge, Box, Flex, Heading, HStack, Text, Textarea, VStack } from '@chakra-ui/react'
+import { Box, HStack, Heading, Text, VStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { IconButton } from '@/components/ui/icon-button'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import Link from 'next/link'
-import { FiArrowLeft, FiEdit2, FiSend } from 'react-icons/fi'
+import Markdown from '@/components/Markdown'
 import Spinner from '@/components/Spinner'
+import { useW3PK } from '@/context/W3PK'
+import { usePageHeader } from '@/context/PageHeader'
 import { brandColors } from '@/theme'
 import { ApiError, ask, askStream, ContextSummary, listContexts, RukhModel } from '@/utils/api'
 
@@ -27,8 +30,10 @@ const MODELS: { value: RukhModel; label: string }[] = [
 export default function ContextPage() {
   const params = useParams<{ context: string }>()
   const contextName = params.context
+  const { isAuthenticated, getAddress } = useW3PK()
 
   const [context, setContext] = useState<ContextSummary | null | undefined>(undefined) // undefined = loading
+  const [address, setAddress] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [model, setModel] = useState<RukhModel>('anthropic')
@@ -38,6 +43,7 @@ export default function ContextPage() {
   const [streamingText, setStreamingText] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | undefined>(undefined)
   const [isSending, setIsSending] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -55,11 +61,42 @@ export default function ContextPage() {
     }
   }, [contextName])
 
+  // The address that signs API calls — the one a context records as its
+  // creator — is the derived wallet, not `user.ethereumAddress`.
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    getAddress()
+      .then(a => {
+        if (!cancelled) setAddress(a)
+      })
+      .catch(() => {
+        // Not being able to resolve the address just means no edit menu item.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, getAddress])
+
+  // `address` is kept even after a logout, so authentication is checked here
+  // rather than cleared there.
+  const isCreator = Boolean(
+    isAuthenticated &&
+    context?.creatorAddress &&
+    address &&
+    context.creatorAddress.toLowerCase() === address.toLowerCase()
+  )
+
+  // The header carries the title ("Rukh / <context>") and the edit entry, so
+  // the page below is nothing but the conversation.
+  usePageHeader(context ? context.name : null, isCreator)
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingText])
 
-  const handleSend = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     const message = input.trim()
     if (!message || isSending) return
     setMessages(prev => [...prev, { role: 'user', content: message }])
@@ -92,7 +129,7 @@ export default function ContextPage() {
   if (context === undefined) {
     return (
       <Box textAlign="center" py={20}>
-        <Spinner />
+        <Spinner size="200px" />
       </Box>
     )
   }
@@ -106,7 +143,7 @@ export default function ContextPage() {
         <Text color="gray.400">No context named &ldquo;{contextName}&rdquo; is available.</Text>
         <Link href="/">
           <Button variant="outline" size="sm">
-            <FiArrowLeft aria-hidden="true" /> Back to all contexts
+            Back to all contexts
           </Button>
         </Link>
       </VStack>
@@ -114,159 +151,108 @@ export default function ContextPage() {
   }
 
   return (
-    <Flex direction="column" minH="calc(100vh - 72px)" py={8}>
-      {/* Context header */}
-      <Flex justify="space-between" align="flex-start" gap={4} flexWrap="wrap" mb={6}>
-        <Box>
-          <HStack gap={3} mb={1}>
-            <Link href="/">
-              <IconButton aria-label="Back to all contexts" variant="ghost" size="sm">
-                <FiArrowLeft />
-              </IconButton>
-            </Link>
-            <Heading as="h1" size="lg" color={brandColors.accent}>
-              {context.name}
-            </Heading>
-          </HStack>
-          <Text color="gray.400" fontSize="sm" pl={12}>
-            {context.description}
-          </Text>
-        </Box>
-        <HStack gap={3}>
-          <select
-            value={model}
-            onChange={e => setModel(e.target.value as RukhModel)}
-            aria-label="Model"
-            style={{
-              background: 'transparent',
-              borderWidth: '1px',
-              borderStyle: 'solid',
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-              borderRadius: '6px',
-              fontSize: '0.875rem',
-              padding: '4px 8px',
-              color: 'inherit',
-            }}
-          >
-            {MODELS.map(m => (
-              <option key={m.value} value={m.value}>
-                {m.label}
-              </option>
+    <Box pb="180px">
+      {messages.length === 0 && !isSending ? (
+        <Text
+          mt={8}
+          color="gray.500"
+          cursor="pointer"
+          onClick={() => inputRef.current?.focus()}
+        ></Text>
+      ) : (
+        <VStack gap={6} align="stretch" py={8}>
+          {messages.map((message, i) =>
+            message.role === 'user' ? (
+              <Text key={i} color={brandColors.accent}>
+                {message.content}
+              </Text>
+            ) : (
+              <Box key={i} color={message.isError ? 'red.300' : undefined}>
+                <Markdown>{message.content}</Markdown>
+              </Box>
+            )
+          )}
+          {isSending &&
+            (streamingText ? (
+              <Markdown>{streamingText}</Markdown>
+            ) : (
+              <Box alignSelf="flex-start">
+                <Spinner />
+              </Box>
             ))}
-          </select>
-          <Checkbox
-            checked={stream}
-            onCheckedChange={e => setStream(!!e.checked)}
-            size="sm"
-            colorPalette="purple"
-          >
-            <Text fontSize="sm" color="gray.300">
-              Stream
-            </Text>
-          </Checkbox>
-          <Link href={`/${context.name}/edit`}>
-            <Button variant="outline" size="sm">
-              <FiEdit2 aria-hidden="true" /> Edit context
-            </Button>
-          </Link>
-        </HStack>
-      </Flex>
-
-      {/* Messages */}
-      <Box flex="1" overflowY="auto" mb={4}>
-        {messages.length === 0 ? (
-          <VStack gap={2} py={16} textAlign="center">
-            <Text color="gray.500" fontSize="lg">
-              Ask anything about {context.name}
-            </Text>
-          </VStack>
-        ) : (
-          <VStack gap={4} align="stretch">
-            {messages.map((message, i) => (
-              <Flex key={i} justify={message.role === 'user' ? 'flex-end' : 'flex-start'}>
-                <Box
-                  maxW="80%"
-                  px={4}
-                  py={3}
-                  borderRadius="lg"
-                  bg={
-                    message.role === 'user'
-                      ? brandColors.primary
-                      : message.isError
-                        ? 'red.900'
-                        : 'whiteAlpha.100'
-                  }
-                  color={message.role === 'user' ? 'white' : undefined}
-                >
-                  <Text fontSize="sm" whiteSpace="pre-wrap">
-                    {message.content}
-                  </Text>
-                </Box>
-              </Flex>
-            ))}
-            {isSending && (
-              <Flex justify="flex-start">
-                <Box maxW="80%" px={4} py={3} borderRadius="lg" bg="whiteAlpha.100">
-                  {streamingText ? (
-                    <Text fontSize="sm" whiteSpace="pre-wrap">
-                      {streamingText}
-                    </Text>
-                  ) : (
-                    <Spinner size="16px" />
-                  )}
-                </Box>
-              </Flex>
-            )}
-            <div ref={messagesEndRef} />
-          </VStack>
-        )}
-      </Box>
-
-      {/* Input */}
-      <HStack
-        gap={2}
-        p={3}
-        borderWidth="1px"
-        borderColor="whiteAlpha.200"
-        borderRadius="lg"
-        align="flex-end"
-      >
-        <Textarea
-          aria-label={`Message the ${context.name} context`}
-          placeholder={`Message ${context.name}...`}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-              handleSend()
-            }
-          }}
-          rows={1}
-          resize="none"
-          border="none"
-          _focus={{ boxShadow: 'none', outline: 'none' }}
-          disabled={isSending}
-        />
-        <IconButton
-          aria-label="Send message"
-          bg={brandColors.primary}
-          color="white"
-          _hover={{ bg: brandColors.secondary }}
-          onClick={handleSend}
-          disabled={!input.trim() || isSending}
-        >
-          <FiSend />
-        </IconButton>
-      </HStack>
-
-      {sessionId && (
-        <HStack justify="flex-end" pt={2}>
-          <Badge variant="subtle" colorPalette="gray" fontSize="xs">
-            Session {sessionId.slice(0, 8)}
-          </Badge>
-        </HStack>
+          <div ref={messagesEndRef} />
+        </VStack>
       )}
-    </Flex>
+
+      <Box position="fixed" bottom={0} left={0} right={0} py={4}>
+        <Box
+          as="form"
+          maxW={{ base: '100%', sm: '640px', md: '768px', lg: '960px', xl: '1024px' }}
+          mx="auto"
+          px={{ base: 4, md: 6, lg: 8 }}
+          onSubmit={handleSubmit}
+        >
+          <HStack gap={2}>
+            <Input
+              ref={inputRef}
+              aria-label={`Message the ${context.name} context`}
+              placeholder={`Message ${context.name}...`}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              disabled={isSending}
+              size="lg"
+              flex="1"
+              bg="black"
+              borderColor="whiteAlpha.300"
+              _focus={{ borderColor: brandColors.accent, boxShadow: 'none', bg: 'black' }}
+            />
+            <Button
+              type="submit"
+              bg={brandColors.primary}
+              color="white"
+              _hover={{ bg: brandColors.secondary }}
+              size="lg"
+              px={6}
+              disabled={!input.trim() || isSending}
+            >
+              Send
+            </Button>
+          </HStack>
+          <HStack gap={3} mt={1.5} align="center">
+            <Box w="100px">
+              <Select
+                value={model}
+                onChange={e => setModel(e.target.value as RukhModel)}
+                aria-label="Model"
+                bg="transparent"
+                borderColor="whiteAlpha.200"
+                color="gray.500"
+                fontSize="xs"
+                pl={2}
+                pr={5}
+                py={0.5}
+                h="auto"
+              >
+                {MODELS.map(m => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+            <Checkbox
+              checked={stream}
+              onCheckedChange={e => setStream(!!e.checked)}
+              size="xs"
+              colorPalette="purple"
+            >
+              <Text fontSize="xs" color="gray.500">
+                Stream
+              </Text>
+            </Checkbox>
+          </HStack>
+        </Box>
+      </Box>
+    </Box>
   )
 }

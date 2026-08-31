@@ -219,6 +219,9 @@ function parseSseFrame(raw: string): { event: string; data: string } | null {
 export interface ContextSummary {
   name: string
   description: string
+  /** Wallet address that created the context; only it may edit the context. */
+  creatorAddress?: string
+  creatorName?: string
 }
 
 /**

@@ -30,6 +30,7 @@ import { FiArrowLeft, FiEdit2, FiFileText, FiLink, FiLock, FiPlus, FiTrash2 } fr
 import Spinner from '@/components/Spinner'
 import LoginButton from '@/components/LoginButton'
 import { useW3PK } from '@/context/W3PK'
+import { usePageHeader } from '@/context/PageHeader'
 import { brandColors } from '@/theme'
 import { formatFileSize } from '@/utils/contexts'
 import {
@@ -78,6 +79,9 @@ export default function ContextEditPage() {
   const [linkForm, setLinkForm] = useState<LinkForm | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Keeps "Rukh / <context>" in the header across the chat and edit pages.
+  usePageHeader(contextExists ? contextName : null)
 
   useEffect(() => {
     let cancelled = false
@@ -145,7 +149,7 @@ export default function ContextEditPage() {
   if (contextExists === undefined) {
     return (
       <Box textAlign="center" py={20}>
-        <Spinner />
+        <Spinner size="200px" />
       </Box>
     )
   }
@@ -189,7 +193,7 @@ export default function ContextEditPage() {
   if (filesStatus === 'loading') {
     return (
       <Box textAlign="center" py={20}>
-        <Spinner />
+        <Spinner size="200px" />
       </Box>
     )
   }
@@ -364,20 +368,7 @@ export default function ContextEditPage() {
     <VStack gap={6} align="stretch" py={8}>
       {/* Page header */}
       <Box>
-        <HStack gap={3} mb={1}>
-          <Link href={`/${contextName}`}>
-            <IconButton aria-label={`Back to ${contextName}`} variant="ghost" size="sm">
-              <FiArrowLeft />
-            </IconButton>
-          </Link>
-          <Heading as="h1" size="lg">
-            Edit{' '}
-            <Box as="span" color={brandColors.accent}>
-              {contextName}
-            </Box>
-          </Heading>
-        </HStack>
-        <Text color="gray.400" fontSize="sm" pl={12}>
+        <Text color="gray.400" fontSize="sm">
           Manage the documents and links that make up this context.
         </Text>
       </Box>
@@ -549,7 +540,7 @@ export default function ContextEditPage() {
               <Dialog.Body pt={4}>
                 {documentForm?.loadingContent ? (
                   <Box textAlign="center" py={10}>
-                    <Spinner />
+                    <Spinner size="200px" />
                   </Box>
                 ) : (
                   <VStack gap={4}>
