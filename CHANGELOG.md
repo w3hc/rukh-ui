@@ -22,6 +22,7 @@
 
 ### Fixed
 
+- `Spinner`'s `/loader.svg` was warned about by Next.js as the Largest Contentful Paint element on pages where a spinner is the first thing rendered (context and dashboard pages, which load behind it). The `next/image` now carries `priority`, so it is preloaded and served `loading="eager"`/`fetchpriority="high"` instead of being lazy-loaded after layout.
 - Build verification on `/settings` failed with `TypeError: Failed to fetch`. `getCurrentBuildHash()` fetches the published bundle from `https://unpkg.com/w3pk@<version>/dist` to hash it, but `unpkg.com` was missing from the CSP `connect-src` in `next.config.ts`, so the browser blocked the request before it left the page. Added it. The same gap exists upstream in genji.
 - Restored the security headers `next.config.ts` lost in the initial refactor. The file had been reduced to the `optimizePackageImports` experiment alone, so the app shipped with no Content-Security-Policy, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` or HSTS — a gap that only shows up in production. Genji's block is back, with `connect-src` unioned with the Rukh API origin derived from `NEXT_PUBLIC_RUKH_API_URL` (defaulting to `http://localhost:3000` in development) so cross-origin API calls are not blocked by the policy.
 - Restored `common.register` across all 10 locales; the translation transposition dropped it. It is currently unused (`LoginButton` renders `t.header.createAccount`), so it can be removed deliberately if it is genuinely dead.

@@ -14,7 +14,19 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/** Turns a failed response into the message the API put in its JSON body. */
+async function errorMessage(res: Response): Promise<string> {
+  try {
+    const body = await res.json()
+    if (Array.isArray(body?.message)) return body.message.join(', ')
+    if (typeof body?.message === 'string') return body.message
+  } catch {
+    // response had no JSON body; keep statusText
+  }
+  return res.statusText
+}
+
+async function send(path: string, init?: RequestInit): Promise<Response> {
   let res: Response
   try {
     res = await fetch(`${API_URL}${path}`, init)
@@ -22,42 +34,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(0, 'Could not reach the Rukh API. Is it running?')
   }
 
-  if (!res.ok) {
-    let message = res.statusText
-    try {
-      const body = await res.json()
-      if (Array.isArray(body?.message)) message = body.message.join(', ')
-      else if (typeof body?.message === 'string') message = body.message
-    } catch {
-      // response had no JSON body; keep statusText
-    }
-    throw new ApiError(res.status, message)
-  }
+  if (!res.ok) throw new ApiError(res.status, await errorMessage(res))
+  return res
+}
 
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await send(path, init)
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
 }
 
 async function requestText(path: string, init?: RequestInit): Promise<string> {
-  let res: Response
-  try {
-    res = await fetch(`${API_URL}${path}`, init)
-  } catch {
-    throw new ApiError(0, 'Could not reach the Rukh API. Is it running?')
-  }
-
-  if (!res.ok) {
-    let message = res.statusText
-    try {
-      const body = await res.json()
-      if (Array.isArray(body?.message)) message = body.message.join(', ')
-      else if (typeof body?.message === 'string') message = body.message
-    } catch {
-      // response had no JSON body; keep statusText
-    }
-    throw new ApiError(res.status, message)
-  }
-
+  const res = await send(path, init)
   return res.text()
 }
 
@@ -100,13 +88,128 @@ export interface AskResponse {
   rag?: RagMetadataDto
 }
 
-export function ask(params: AskParams): Promise<AskResponse> {
+function askForm(params: AskParams): FormData {
   const form = new FormData()
   form.set('message', params.message)
   if (params.model) form.set('model', params.model)
   if (params.context) form.set('context', params.context)
   if (params.sessionId) form.set('sessionId', params.sessionId)
-  return request('/ask', { method: 'POST', body: form })
+  return form
+}
+
+export function ask(params: AskParams): Promise<AskResponse> {
+  return request('/ask', { method: 'POST', body: askForm(params) })
+}
+
+export interface AskStreamHandlers {
+  /** A piece of the answer, to append to what has been rendered so far. */
+  onChunk?: (text: string) => void
+  /**
+   * Discard everything rendered so far and start again. Only the
+   * anthropic-web-search model emits this, when it narrates before searching
+   * and then starts the real answer.
+   */
+  onReset?: () => void
+  signal?: AbortSignal
+}
+
+/**
+ * Same call as `ask()`, but with `stream=true`, so the answer arrives as
+ * server-sent events. Resolves with the terminal `done` payload, which is
+ * identical to what `ask()` would have returned — a caller that does not want
+ * incremental rendering can simply omit the handlers.
+ */
+export async function askStream(
+  params: AskParams,
+  handlers: AskStreamHandlers = {}
+): Promise<AskResponse> {
+  const form = askForm(params)
+  form.set('stream', 'true')
+
+  const res = await send('/ask', { method: 'POST', body: form, signal: handlers.signal })
+
+  // An older API that doesn't know about `stream` just answers with JSON;
+  // that is still a perfectly good answer, so take it.
+  if (!res.body || !res.headers.get('content-type')?.includes('text/event-stream')) {
+    return (await res.json()) as AskResponse
+  }
+
+  let done: AskResponse | undefined
+
+  for await (const frame of readSseFrames(res.body)) {
+    switch (frame.event) {
+      case 'chunk':
+        handlers.onChunk?.(parseFrame<{ text: string }>(frame.data).text)
+        break
+      case 'reset':
+        handlers.onReset?.()
+        break
+      case 'done':
+        done = parseFrame<AskResponse>(frame.data)
+        break
+      case 'error':
+        throw new ApiError(
+          502,
+          parseFrame<{ message: string }>(frame.data).message || 'The model failed to answer.'
+        )
+    }
+  }
+
+  if (!done) throw new ApiError(0, 'The answer was cut off before it was complete.')
+  return done
+}
+
+function parseFrame<T>(data: string): T {
+  try {
+    return JSON.parse(data) as T
+  } catch {
+    throw new ApiError(0, 'The API sent a malformed event.')
+  }
+}
+
+/**
+ * Yields one server-sent event at a time from a response body. Events are
+ * separated by a blank line; `event:` names the event and `data:` carries its
+ * JSON payload (which never contains a raw CR, since JSON escapes it).
+ */
+async function* readSseFrames(
+  body: ReadableStream<Uint8Array>
+): AsyncGenerator<{ event: string; data: string }> {
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true }).replace(/\r/g, '')
+
+      let end = buffer.indexOf('\n\n')
+      while (end !== -1) {
+        const frame = parseSseFrame(buffer.slice(0, end))
+        buffer = buffer.slice(end + 2)
+        if (frame) yield frame
+        end = buffer.indexOf('\n\n')
+      }
+    }
+  } finally {
+    // Aborts the request when the consumer stops early instead of leaving the
+    // model streaming into a socket nobody reads.
+    await reader.cancel().catch(() => undefined)
+  }
+}
+
+function parseSseFrame(raw: string): { event: string; data: string } | null {
+  let event = 'message'
+  const data: string[] = []
+
+  for (const line of raw.split('\n')) {
+    if (line.startsWith('event:')) event = line.slice(6).trim()
+    else if (line.startsWith('data:')) data.push(line.slice(5).trim())
+  }
+
+  return data.length ? { event, data: data.join('\n') } : null
 }
 
 // ---------------------------------------------------------------------------

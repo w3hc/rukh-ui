@@ -40,6 +40,7 @@ export default function Spinner({ size = '32px' }: SpinnerProps) {
         aria-hidden="true"
         width={sizeNum}
         height={sizeNum}
+        priority
         style={{ display: 'block' }}
       />
       <span className="sr-only">{t.common.srLoadingText}</span>

@@ -4,12 +4,13 @@ import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { Badge, Box, Flex, Heading, HStack, Text, Textarea, VStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { IconButton } from '@/components/ui/icon-button'
 import Link from 'next/link'
 import { FiArrowLeft, FiEdit2, FiSend } from 'react-icons/fi'
 import Spinner from '@/components/Spinner'
 import { brandColors } from '@/theme'
-import { ApiError, ask, ContextSummary, listContexts, RukhModel } from '@/utils/api'
+import { ApiError, ask, askStream, ContextSummary, listContexts, RukhModel } from '@/utils/api'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -31,6 +32,10 @@ export default function ContextPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [model, setModel] = useState<RukhModel>('anthropic')
+  const [stream, setStream] = useState(true)
+  // The answer as it arrives, rendered in place of the "thinking" spinner.
+  // null when nothing is streaming.
+  const [streamingText, setStreamingText] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | undefined>(undefined)
   const [isSending, setIsSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -52,7 +57,7 @@ export default function ContextPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, streamingText])
 
   const handleSend = async () => {
     const message = input.trim()
@@ -60,14 +65,26 @@ export default function ContextPage() {
     setMessages(prev => [...prev, { role: 'user', content: message }])
     setInput('')
     setIsSending(true)
+    if (stream) setStreamingText('')
+    const params = { message, model, context: contextName, sessionId }
     try {
-      const response = await ask({ message, model, context: contextName, sessionId })
+      // Both paths end on the same payload: streaming only changes how much of
+      // the answer is on screen before it lands.
+      const response = stream
+        ? await askStream(params, {
+            onChunk: text => setStreamingText(prev => (prev ?? '') + text),
+            // The model narrated before searching; what it said is not part of
+            // the answer, so drop it.
+            onReset: () => setStreamingText(''),
+          })
+        : await ask(params)
       setSessionId(response.sessionId)
       setMessages(prev => [...prev, { role: 'assistant', content: response.output }])
     } catch (err) {
       const description = err instanceof ApiError ? err.message : 'Something went wrong.'
       setMessages(prev => [...prev, { role: 'assistant', content: description, isError: true }])
     } finally {
+      setStreamingText(null)
       setIsSending(false)
     }
   }
@@ -137,6 +154,16 @@ export default function ContextPage() {
               </option>
             ))}
           </select>
+          <Checkbox
+            checked={stream}
+            onCheckedChange={e => setStream(!!e.checked)}
+            size="sm"
+            colorPalette="purple"
+          >
+            <Text fontSize="sm" color="gray.300">
+              Stream
+            </Text>
+          </Checkbox>
           <Link href={`/${context.name}/edit`}>
             <Button variant="outline" size="sm">
               <FiEdit2 aria-hidden="true" /> Edit context
@@ -179,8 +206,14 @@ export default function ContextPage() {
             ))}
             {isSending && (
               <Flex justify="flex-start">
-                <Box px={4} py={3} borderRadius="lg" bg="whiteAlpha.100">
-                  <Spinner size="16px" />
+                <Box maxW="80%" px={4} py={3} borderRadius="lg" bg="whiteAlpha.100">
+                  {streamingText ? (
+                    <Text fontSize="sm" whiteSpace="pre-wrap">
+                      {streamingText}
+                    </Text>
+                  ) : (
+                    <Spinner size="16px" />
+                  )}
                 </Box>
               </Flex>
             )}
