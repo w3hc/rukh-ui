@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import { Box, Container } from '@chakra-ui/react'
 import { metadata } from './metadata'
 import { LanguageProvider } from '@/context/LanguageContext'
+import { PageHeaderProvider } from '@/context/PageHeader'
 import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -27,16 +28,18 @@ export default function RootLayout({
         </a>
         <ContextProvider>
           <LanguageProvider>
-            <Header />
-            <Box as="main" id="main-content" pt="72px">
-              <Container
-                maxW={{ base: '100%', sm: '640px', md: '768px', lg: '960px', xl: '1024px' }}
-                px={{ base: 4, md: 6, lg: 8 }}
-                mx="auto"
-              >
-                {children}
-              </Container>
-            </Box>
+            <PageHeaderProvider>
+              <Header />
+              <Box as="main" id="main-content" pt="72px">
+                <Container
+                  maxW={{ base: '100%', sm: '640px', md: '768px', lg: '960px', xl: '1024px' }}
+                  px={{ base: 4, md: 6, lg: 8 }}
+                  mx="auto"
+                >
+                  {children}
+                </Container>
+              </Box>
+            </PageHeaderProvider>
             <Toaster />
           </LanguageProvider>
         </ContextProvider>

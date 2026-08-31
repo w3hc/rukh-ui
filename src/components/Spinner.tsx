@@ -8,7 +8,7 @@ interface SpinnerProps {
   size?: string | number
 }
 
-export default function Spinner({ size = '32px' }: SpinnerProps) {
+export default function Spinner({ size = '200px' }: SpinnerProps) {
   const t = useTranslation()
 
   // Convert size to a numeric value
@@ -27,7 +27,7 @@ export default function Spinner({ size = '32px' }: SpinnerProps) {
 
     // Parse pixel values (e.g., "16px" or "16")
     const parsed = parseInt(s, 10)
-    return isNaN(parsed) ? 32 : parsed // fallback to 32 if parsing fails
+    return isNaN(parsed) ? 200 : parsed // fallback to 200 if parsing fails
   }
 
   const sizeNum = getSizeNum(size)
@@ -40,6 +40,7 @@ export default function Spinner({ size = '32px' }: SpinnerProps) {
         aria-hidden="true"
         width={sizeNum}
         height={sizeNum}
+        priority
         style={{ display: 'block' }}
       />
       <span className="sr-only">{t.common.srLoadingText}</span>

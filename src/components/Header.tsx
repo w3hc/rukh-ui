@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Container, Flex, Heading, Portal } from '@chakra-ui/react'
+import { Box, Container, Flex, Heading, Portal, Text } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
 import { MenuRoot, MenuTrigger, MenuPositioner, MenuContent, MenuItem } from '@/components/ui/menu'
@@ -12,10 +12,14 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { useW3PK } from '@/context/W3PK'
 import { useState, useEffect } from 'react'
 import { brandColors } from '@/theme'
+import { useHeaderState } from '@/context/PageHeader'
 
 export default function Header() {
   const { isAuthenticated, user, isLoading, logout } = useW3PK()
   const t = useTranslation()
+  // Set by the context pages; the header carries their title so the pages
+  // themselves stay bare.
+  const page = useHeaderState()
 
   const [scrollPosition, setScrollPosition] = useState(0)
 
@@ -52,14 +56,24 @@ export default function Header() {
               transition="transform 0.5s ease-in-out"
               suppressHydrationWarning
             >
-              <Flex align="center" gap={3}>
+              <Flex align="center" gap={2}>
                 <Link href="/">
-                  <Flex align="center" gap={5}>
-                    <Heading as="h3" size="md" textAlign="center">
-                      Rukh
-                    </Heading>
-                  </Flex>
+                  <Heading as="h3" size="md">
+                    Rukh
+                  </Heading>
                 </Link>
+                {page && (
+                  <>
+                    <Text color="gray.600" fontSize="lg" aria-hidden="true">
+                      /
+                    </Text>
+                    <Link href={`/${page.contextName}`}>
+                      <Heading as="h3" size="md" color={brandColors.accent}>
+                        {page.contextName}
+                      </Heading>
+                    </Link>
+                  </>
+                )}
               </Flex>
             </Box>
 
@@ -118,6 +132,20 @@ export default function Header() {
                           {t.navigation.settings}
                         </MenuItem>
                       </Link>
+                      {page?.canEdit && (
+                        <Link href={`/${page.contextName}/edit`}>
+                          <MenuItem
+                            value="edit-context"
+                            fontSize="md"
+                            px={4}
+                            py={3}
+                            color="red.400"
+                            _hover={{ bg: 'red.900', color: 'red.200' }}
+                          >
+                            Edit
+                          </MenuItem>
+                        </Link>
+                      )}
                     </MenuContent>
                   </MenuPositioner>
                 </Portal>

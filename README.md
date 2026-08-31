@@ -30,4 +30,8 @@ GPL-3.0
 
 ## Contact
 
-https://julienberanger.com/contact
+**Julien Béranger** ([GitHub](https://github.com/julienbrg) | [Website](https://julienberanger.com/contact))
+
+- Element: [@julienbrg:matrix.org](https://matrix.to/#/@julienbrg:matrix.org)
+- Farcaster: [julien-](https://warpcast.com/julien-)
+- Telegram: [@julienbrg](https://t.me/julienbrg)

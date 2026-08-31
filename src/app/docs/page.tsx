@@ -1,11 +1,9 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { useSyncExternalStore, type ReactNode } from 'react'
 import { Box, Heading, Link as ChakraLink, Text, VStack } from '@chakra-ui/react'
-import { IconButton } from '@/components/ui/icon-button'
-import { toaster } from '@/components/ui/toaster'
 import Link from 'next/link'
-import { FiCheck, FiCopy } from 'react-icons/fi'
+import Snippet from '@/components/Snippet'
 import { brandColors } from '@/theme'
 
 // The docs describe the public API, so they fall back to the hosted instance
@@ -75,52 +73,6 @@ function ExternalLink({ href, children }: { href: string; children: ReactNode })
   )
 }
 
-function Snippet({ code, label }: { code: string; label: string }) {
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 2000)
-    return () => clearTimeout(timer)
-  }, [copied])
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopied(true)
-    } catch {
-      toaster.create({ title: 'Could not copy to clipboard', type: 'error', duration: 3000 })
-    }
-  }
-
-  return (
-    <Box position="relative" bg="gray.900" borderRadius="md" p={4} pr={12}>
-      <Box
-        as="pre"
-        margin={0}
-        whiteSpace="pre-wrap"
-        wordBreak="break-word"
-        fontFamily="monospace"
-        fontSize="xs"
-        color="gray.200"
-      >
-        {code}
-      </Box>
-      <IconButton
-        aria-label={copied ? `${label} copied` : `Copy ${label}`}
-        size="xs"
-        variant="ghost"
-        position="absolute"
-        top={2}
-        right={2}
-        onClick={handleCopy}
-      >
-        {copied ? <FiCheck /> : <FiCopy />}
-      </IconButton>
-    </Box>
-  )
-}
-
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <VStack as="section" id={id} gap={4} align="stretch" scrollMarginTop="88px">
@@ -160,10 +112,12 @@ export default function DocsPage() {
           different answers, because each one reads from its own material.
         </Text>
         <Text color="gray.300">
-          The <TextLink href="/">home page</TextLink> lists every context available to you. Pick one
-          and you land on its conversation page — type a question, choose the model you want to
-          answer with, and send. Follow-up questions stay in the same session, so the context
-          remembers what you already said. No account is needed to interact with a context.
+          Every context has its own page, at <code>/</code> followed by its name — that URL is all
+          you need, and the <TextLink href="/#contexts">home page</TextLink> lists the ones
+          available to you. Type a question, choose the model you want to answer with, and send.
+          Follow-up questions stay in the same session, so the context remembers what you already
+          said. No account is needed to interact with a context; the contexts you created yourself
+          are on your <TextLink href="/dashboard">dashboard</TextLink>.
         </Text>
       </Section>
 
