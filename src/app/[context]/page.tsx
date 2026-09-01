@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { Box, HStack, Heading, Text, VStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import Link from 'next/link'
 import Markdown from '@/components/Markdown'
@@ -43,7 +43,7 @@ export default function ContextPage() {
   const [streamingText, setStreamingText] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | undefined>(undefined)
   const [isSending, setIsSending] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -126,6 +126,16 @@ export default function ContextPage() {
     }
   }
 
+  // Enter sends, Shift+Enter adds a line. A textarea would otherwise swallow
+  // Enter, leaving the Send button as the only way to submit.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter' || e.shiftKey) return
+    // Mid-composition Enter commits an IME candidate; it is not a submit.
+    if (e.nativeEvent.isComposing) return
+    e.preventDefault()
+    void handleSubmit(e)
+  }
+
   if (context === undefined) {
     return (
       <Box textAlign="center" py={20}>
@@ -163,7 +173,7 @@ export default function ContextPage() {
         <VStack gap={6} align="stretch" py={8}>
           {messages.map((message, i) =>
             message.role === 'user' ? (
-              <Text key={i} color={brandColors.accent}>
+              <Text key={i} color={brandColors.accent} whiteSpace="pre-wrap">
                 {message.content}
               </Text>
             ) : (
@@ -192,13 +202,14 @@ export default function ContextPage() {
           px={{ base: 4, md: 6, lg: 8 }}
           onSubmit={handleSubmit}
         >
-          <HStack gap={2}>
-            <Input
+          <HStack gap={2} align="flex-end">
+            <Textarea
               ref={inputRef}
               aria-label={`Message the ${context.name} context`}
               placeholder={`Message ${context.name}...`}
               value={input}
               onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               disabled={isSending}
               size="lg"
               flex="1"
