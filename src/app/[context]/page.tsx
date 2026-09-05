@@ -41,6 +41,9 @@ export default function ContextPage() {
   // The answer as it arrives, rendered in place of the "thinking" spinner.
   // null when nothing is streaming.
   const [streamingText, setStreamingText] = useState<string | null>(null)
+  // The model's reasoning, shown while it works and dropped the moment the
+  // answer starts. It is not part of the answer and is never kept.
+  const [thinkingText, setThinkingText] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | undefined>(undefined)
   const [isSending, setIsSending] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -93,7 +96,7 @@ export default function ContextPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, streamingText])
+  }, [messages, streamingText, thinkingText])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -103,13 +106,19 @@ export default function ContextPage() {
     setInput('')
     setIsSending(true)
     if (stream) setStreamingText('')
+    setThinkingText(null)
     const params = { message, model, context: contextName, sessionId }
     try {
       // Both paths end on the same payload: streaming only changes how much of
       // the answer is on screen before it lands.
       const response = stream
         ? await askStream(params, {
-            onChunk: text => setStreamingText(prev => (prev ?? '') + text),
+            onChunk: text => {
+              // Reasoning has served its purpose once the answer begins
+              setThinkingText(null)
+              setStreamingText(prev => (prev ?? '') + text)
+            },
+            onThinking: text => setThinkingText(prev => (prev ?? '') + text),
             // The model narrated before searching; what it said is not part of
             // the answer, so drop it.
             onReset: () => setStreamingText(''),
@@ -122,6 +131,7 @@ export default function ContextPage() {
       setMessages(prev => [...prev, { role: 'assistant', content: description, isError: true }])
     } finally {
       setStreamingText(null)
+      setThinkingText(null)
       setIsSending(false)
     }
   }
@@ -185,6 +195,19 @@ export default function ContextPage() {
           {isSending &&
             (streamingText ? (
               <Markdown>{streamingText}</Markdown>
+            ) : thinkingText ? (
+              <Box
+                borderLeftWidth="2px"
+                borderColor="whiteAlpha.300"
+                pl={4}
+                color="gray.500"
+                fontSize="sm"
+              >
+                <Text mb={1} fontSize="xs" textTransform="uppercase" letterSpacing="wide">
+                  Thinking
+                </Text>
+                <Text whiteSpace="pre-wrap">{thinkingText}</Text>
+              </Box>
             ) : (
               <Box alignSelf="flex-start">
                 <Spinner />

@@ -97,13 +97,36 @@ function askForm(params: AskParams): FormData {
   return form
 }
 
-export function ask(params: AskParams): Promise<AskResponse> {
-  return request('/ask', { method: 'POST', body: askForm(params) })
+export async function ask(params: AskParams): Promise<AskResponse> {
+  const response = await request<AskResponse>('/ask', {
+    method: 'POST',
+    body: askForm(params),
+  })
+  logResponse('/ask', response)
+  return response
+}
+
+/**
+ * Prints the whole payload — model, usage, cost, rag — which the UI otherwise
+ * shows none of. Serialized rather than logged as an object so what appears in
+ * the console is the exact JSON the API sent, ready to copy out.
+ */
+function logResponse(label: string, response: AskResponse): void {
+  console.log(`[rukh] ${label} response`, JSON.stringify(response, null, 2))
 }
 
 export interface AskStreamHandlers {
   /** A piece of the answer, to append to what has been rendered so far. */
   onChunk?: (text: string) => void
+  /**
+   * A piece of the model's reasoning, which is not part of the answer and
+   * never appears in the resolved payload.
+   *
+   * It is worth rendering anyway: reasoning can run for minutes before the
+   * first word of the answer, and this is the only sign of life during that
+   * wait. Ignoring it is fine — the answer is unaffected.
+   */
+  onThinking?: (text: string) => void
   /**
    * Discard everything rendered so far and start again. Only the
    * anthropic-web-search model emits this, when it narrates before searching
@@ -131,7 +154,9 @@ export async function askStream(
   // An older API that doesn't know about `stream` just answers with JSON;
   // that is still a perfectly good answer, so take it.
   if (!res.body || !res.headers.get('content-type')?.includes('text/event-stream')) {
-    return (await res.json()) as AskResponse
+    const response = (await res.json()) as AskResponse
+    logResponse('/ask (no stream)', response)
+    return response
   }
 
   let done: AskResponse | undefined
@@ -141,11 +166,15 @@ export async function askStream(
       case 'chunk':
         handlers.onChunk?.(parseFrame<{ text: string }>(frame.data).text)
         break
+      case 'thinking':
+        handlers.onThinking?.(parseFrame<{ text: string }>(frame.data).text)
+        break
       case 'reset':
         handlers.onReset?.()
         break
       case 'done':
         done = parseFrame<AskResponse>(frame.data)
+        logResponse('/ask (stream)', done)
         break
       case 'error':
         throw new ApiError(
@@ -171,6 +200,10 @@ function parseFrame<T>(data: string): T {
  * Yields one server-sent event at a time from a response body. Events are
  * separated by a blank line; `event:` names the event and `data:` carries its
  * JSON payload (which never contains a raw CR, since JSON escapes it).
+ *
+ * The API also sends bare comment frames (`: ping`) to stop proxies treating a
+ * long silent answer as an idle connection. They carry no `data:`, so they
+ * fall out here and never reach the caller.
  */
 async function* readSseFrames(
   body: ReadableStream<Uint8Array>
