@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { Box, HStack, Heading, Text, VStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { IconButton } from '@/components/ui/icon-button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
+import { toaster } from '@/components/ui/toaster'
+import { FiPaperclip, FiX } from 'react-icons/fi'
 import Link from 'next/link'
 import Markdown from '@/components/Markdown'
 import Spinner from '@/components/Spinner'
@@ -14,12 +17,23 @@ import { useW3PK } from '@/context/W3PK'
 import { usePageHeader } from '@/context/PageHeader'
 import { useStoredPreference } from '@/hooks/useStoredPreference'
 import { brandColors } from '@/theme'
-import { ApiError, ask, askStream, ContextSummary, listContexts, RukhModel } from '@/utils/api'
+import {
+  ACCEPTED_UPLOAD_EXTENSIONS,
+  ApiError,
+  ask,
+  askStream,
+  ContextSummary,
+  listContexts,
+  MAX_UPLOAD_BYTES,
+  RukhModel,
+} from '@/utils/api'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   isError?: boolean
+  /** What was sent alongside the message; its content is deliberately not kept. */
+  attachment?: { name: string; size: number }
 }
 
 const MODELS: { value: RukhModel; label: string }[] = [
@@ -36,6 +50,29 @@ const MODEL_STORAGE_KEY = 'preferredModel'
 const STREAM_STORAGE_KEY = 'streamEnabled'
 
 const isRukhModel = (value: string): value is RukhModel => MODELS.some(m => m.value === value)
+
+const ACCEPTED_UPLOADS = ACCEPTED_UPLOAD_EXTENSIONS.join(', ')
+
+/**
+ * Mirrors the API's `FileValidator`, so a file it would reject never costs a
+ * round trip. Returns the message to show, or null when the file is fine.
+ */
+function uploadError(file: File): string | null {
+  const name = file.name.toLowerCase()
+  if (!ACCEPTED_UPLOAD_EXTENSIONS.some(ext => name.endsWith(ext))) {
+    return `Only ${ACCEPTED_UPLOADS} files can be attached.`
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return `That file is over the ${MAX_UPLOAD_BYTES / 1024 / 1024} MB limit.`
+  }
+  return null
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
 
 export default function ContextPage() {
   const params = useParams<{ context: string }>()
@@ -54,7 +91,13 @@ export default function ContextPage() {
   const [thinkingText, setThinkingText] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | undefined>(undefined)
   const [isSending, setIsSending] = useState(false)
+  // Goes with the next message and is cleared once it is sent: the API puts it
+  // in the system prompt for that one call, so a chip that lingered would imply
+  // a persistence that does not exist.
+  const [file, setFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Both fall back to their defaults until the stored value is read, which is
@@ -113,16 +156,77 @@ export default function ContextPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingText, thinkingText])
 
+  /** Takes a file if the API would, and says why in a toast if it would not. */
+  const attach = useCallback((candidate: File) => {
+    const error = uploadError(candidate)
+    if (error) {
+      toaster.create({ title: error, type: 'error', duration: 4000 })
+      return
+    }
+    // One at a time, matching the server, which takes a single part.
+    setFile(candidate)
+  }, [])
+
+  // The drag target is the window rather than the composer: a zone the user has
+  // to aim at is a worse target than the whole page, and listening here also
+  // stops the browser from navigating away to a file dropped anywhere else.
+  //
+  // `dragleave` fires on every element boundary crossed on the way in, so the
+  // depth counter is what separates leaving a child from leaving the page.
+  useEffect(() => {
+    let depth = 0
+
+    const onDragEnter = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes('Files')) return
+      e.preventDefault()
+      depth += 1
+      setIsDragging(true)
+    }
+    const onDragOver = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes('Files')) return
+      e.preventDefault()
+    }
+    const onDragLeave = () => {
+      depth = Math.max(0, depth - 1)
+      if (depth === 0) setIsDragging(false)
+    }
+    const onDrop = (e: DragEvent) => {
+      depth = 0
+      setIsDragging(false)
+      const dropped = e.dataTransfer?.files?.[0]
+      if (!dropped) return
+      // Without this the browser leaves the conversation to open the file.
+      e.preventDefault()
+      attach(dropped)
+    }
+
+    window.addEventListener('dragenter', onDragEnter)
+    window.addEventListener('dragover', onDragOver)
+    window.addEventListener('dragleave', onDragLeave)
+    window.addEventListener('drop', onDrop)
+    return () => {
+      window.removeEventListener('dragenter', onDragEnter)
+      window.removeEventListener('dragover', onDragOver)
+      window.removeEventListener('dragleave', onDragLeave)
+      window.removeEventListener('drop', onDrop)
+    }
+  }, [attach])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const message = input.trim()
+    // A file on its own is a valid message. `AskDto.message` is not nullable,
+    // so an empty composer sends the filename — enough for the model to know
+    // what arrived, and it reads sensibly in the transcript.
+    const message = input.trim() || file?.name || ''
     if (!message || isSending) return
-    setMessages(prev => [...prev, { role: 'user', content: message }])
+    const attachment = file ? { name: file.name, size: file.size } : undefined
+    setMessages(prev => [...prev, { role: 'user', content: message, attachment }])
     setInput('')
     setIsSending(true)
     if (stream) setStreamingText('')
     setThinkingText(null)
-    const params = { message, model, context: contextName, sessionId }
+    const params = { message, model, context: contextName, sessionId, file: file ?? undefined }
+    setFile(null)
     try {
       // Both paths end on the same payload: streaming only changes how much of
       // the answer is on screen before it lands.
@@ -187,6 +291,36 @@ export default function ContextPage() {
 
   return (
     <Box pb="180px">
+      {isDragging && (
+        <Box
+          position="fixed"
+          inset={0}
+          zIndex="modal"
+          bg="blackAlpha.800"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          pointerEvents="none"
+        >
+          <Box
+            borderWidth="2px"
+            borderStyle="dashed"
+            borderColor={brandColors.accent}
+            borderRadius="lg"
+            px={10}
+            py={8}
+            textAlign="center"
+          >
+            <Text fontSize="lg" color="white">
+              Drop a file to attach it
+            </Text>
+            <Text fontSize="sm" color="gray.400" mt={1}>
+              {ACCEPTED_UPLOADS} · up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB
+            </Text>
+          </Box>
+        </Box>
+      )}
+
       {messages.length === 0 && !isSending ? (
         <Text
           mt={8}
@@ -198,9 +332,21 @@ export default function ContextPage() {
         <VStack gap={6} align="stretch" py={8}>
           {messages.map((message, i) =>
             message.role === 'user' ? (
-              <Text key={i} color={brandColors.accent} whiteSpace="pre-wrap">
-                {message.content}
-              </Text>
+              <Box key={i}>
+                <Text color={brandColors.accent} whiteSpace="pre-wrap">
+                  {message.content}
+                </Text>
+                {/* The file's text is never echoed here: a 5 MB CSV in the
+                    scrollback is precisely what this feature removes. */}
+                {message.attachment && (
+                  <HStack gap={1.5} mt={1} color="gray.500" fontSize="xs">
+                    <FiPaperclip aria-hidden />
+                    <Text>
+                      {message.attachment.name} · {formatSize(message.attachment.size)}
+                    </Text>
+                  </HStack>
+                )}
+              </Box>
             ) : (
               <Box key={i} color={message.isError ? 'red.300' : undefined}>
                 <Markdown>{message.content}</Markdown>
@@ -240,6 +386,39 @@ export default function ContextPage() {
           px={{ base: 4, md: 6, lg: 8 }}
           onSubmit={handleSubmit}
         >
+          {file && (
+            <HStack
+              gap={2}
+              mb={2}
+              px={3}
+              py={1.5}
+              w="fit-content"
+              maxW="100%"
+              borderWidth="1px"
+              borderColor="whiteAlpha.300"
+              borderRadius="md"
+            >
+              <Box color="gray.400" flexShrink={0}>
+                <FiPaperclip aria-hidden />
+              </Box>
+              <Text fontSize="sm" color="gray.300" truncate>
+                {file.name}
+              </Text>
+              <Text fontSize="xs" color="gray.500" flexShrink={0}>
+                {formatSize(file.size)}
+              </Text>
+              <IconButton
+                aria-label={`Remove ${file.name}`}
+                size="2xs"
+                variant="ghost"
+                color="gray.400"
+                _hover={{ color: 'white', bg: 'whiteAlpha.200' }}
+                onClick={() => setFile(null)}
+              >
+                <FiX />
+              </IconButton>
+            </HStack>
+          )}
           <HStack gap={2} align="flex-end">
             <Textarea
               ref={inputRef}
@@ -255,6 +434,32 @@ export default function ContextPage() {
               borderColor="whiteAlpha.300"
               _focus={{ borderColor: brandColors.accent, boxShadow: 'none', bg: 'black' }}
             />
+            {/* Dragging is unreachable by keyboard and absent on iOS, so the
+                paperclip is the way in, not a shortcut. */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_UPLOAD_EXTENSIONS.join(',')}
+              hidden
+              onChange={e => {
+                const picked = e.target.files?.[0]
+                if (picked) attach(picked)
+                // Lets the same file be picked again after being removed.
+                e.target.value = ''
+              }}
+            />
+            <IconButton
+              aria-label="Attach a file"
+              variant="outline"
+              size="lg"
+              borderColor="whiteAlpha.300"
+              color="gray.400"
+              _hover={{ color: 'white', borderColor: 'whiteAlpha.500' }}
+              disabled={isSending}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <FiPaperclip />
+            </IconButton>
             <Button
               type="submit"
               bg={brandColors.primary}
@@ -262,7 +467,7 @@ export default function ContextPage() {
               _hover={{ bg: brandColors.secondary }}
               size="lg"
               px={6}
-              disabled={!input.trim() || isSending}
+              disabled={(!input.trim() && !file) || isSending}
             >
               Send
             </Button>

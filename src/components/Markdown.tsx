@@ -1,21 +1,39 @@
 'use client'
 
 import { useEffect, useRef, useState, type ComponentPropsWithoutRef } from 'react'
-import { Box } from '@chakra-ui/react'
+import { Box, HStack } from '@chakra-ui/react'
 import ReactMarkdown, { type Components, type ExtraProps } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { IconButton } from '@/components/ui/icon-button'
 import { toaster } from '@/components/ui/toaster'
 import { brandColors } from '@/theme'
-import { FiCheck, FiCopy } from 'react-icons/fi'
+import { FiCheck, FiCopy, FiDownload } from 'react-icons/fi'
 
 /**
- * A code block with a copy button, for answers whose payload is the block
- * itself — a column to paste back into a spreadsheet, a command to run. Mirrors
- * `Snippet`, which does the same for hand-written code on the static pages;
- * this one reads its text from the rendered `<pre>` instead, since the content
- * arrives as markdown children rather than as a string prop. `innerText` is
- * what is on screen, newlines included.
+ * File extension for a fence's language. react-markdown puts the language on
+ * the inner `code` as `language-csv`; anything unlabelled or unrecognised is
+ * text, which every editor and spreadsheet will still open.
+ */
+const EXTENSION_BY_LANGUAGE: Record<string, string> = {
+  csv: 'csv',
+  json: 'json',
+  md: 'md',
+  markdown: 'md',
+}
+
+/**
+ * A code block with copy and download buttons, for answers whose payload is the
+ * block itself — a column to paste back into a spreadsheet, a command to run.
+ * Copying mirrors `Snippet`, which does the same for hand-written code on the
+ * static pages; this one reads its text from the rendered `<pre>` instead,
+ * since the content arrives as markdown children rather than as a string prop.
+ * `innerText` is what is on screen, newlines included, which is also what a
+ * spreadsheet needs — so the download saves exactly what the copy button puts
+ * on the clipboard.
+ *
+ * Both buttons appear on every block, as the copy button already did. A
+ * one-line `bash` block gets a pointless download button; that is the cost of
+ * not guessing which blocks are payloads.
  *
  * `node` is react-markdown's own AST handle, not a DOM attribute, so it is
  * peeled off rather than spread onto the `pre`.
@@ -39,29 +57,56 @@ function CodeBlock({ children, node, ...props }: ComponentPropsWithoutRef<'pre'>
     }
   }
 
+  const handleDownload = () => {
+    const text = ref.current?.innerText ?? ''
+    // The fence's language lives on the inner `code`, not on the `pre`.
+    const language = ref.current?.querySelector('code')?.className.match(/language-(\w+)/)?.[1]
+    const extension = (language && EXTENSION_BY_LANGUAGE[language.toLowerCase()]) || 'txt'
+
+    // Excel on Windows reads a BOM-less UTF-8 CSV as cp1252 and turns every
+    // accent into mojibake — the same failure this feature exists to avoid,
+    // arriving from the other direction.
+    const bom = extension === 'csv' ? '\uFEFF' : ''
+    // Not named after the file that was attached: a block is not an edit of the
+    // input, and a name suggesting otherwise invites overwriting the original.
+    const url = URL.createObjectURL(new Blob([bom + text], { type: 'text/plain;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `rukh-answer.${extension}`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // The brand purple is dark, so it only reads against a light ground: a
+  // near-white chip, not the block's own near-black surface.
+  const chip = {
+    size: 'sm',
+    variant: 'solid',
+    bg: 'whiteAlpha.900',
+    color: brandColors.primary,
+    boxShadow: 'sm',
+    transition: 'background 0.15s',
+    _hover: { bg: 'white' },
+  } as const
+
   return (
     <Box position="relative">
       <pre ref={ref} {...props}>
         {children}
       </pre>
-      <IconButton
-        aria-label={copied ? 'Copied' : 'Copy to clipboard'}
-        size="sm"
-        variant="solid"
-        // The brand purple is dark, so it only reads against a light ground:
-        // a near-white chip, not the block's own near-black surface.
-        bg="whiteAlpha.900"
-        color={brandColors.primary}
-        position="absolute"
-        top={2}
-        right={2}
-        boxShadow="sm"
-        transition="background 0.15s"
-        _hover={{ bg: 'white' }}
-        onClick={handleCopy}
-      >
-        {copied ? <FiCheck /> : <FiCopy />}
-      </IconButton>
+      <HStack position="absolute" top={2} right={2} gap={1}>
+        <IconButton aria-label="Download as a file" {...chip} onClick={handleDownload}>
+          <FiDownload />
+        </IconButton>
+        {/* Copy keeps the outer position it has always had. */}
+        <IconButton
+          aria-label={copied ? 'Copied' : 'Copy to clipboard'}
+          {...chip}
+          onClick={handleCopy}
+        >
+          {copied ? <FiCheck /> : <FiCopy />}
+        </IconButton>
+      </HStack>
     </Box>
   )
 }
@@ -92,14 +137,14 @@ const components: Components = {
  * text with enough rhythm to read. Styling is CSS on the wrapper rather than
  * a `components` map so a half-streamed answer costs nothing to re-render; the
  * map above is module-level and holds only the anchor's link behaviour and the
- * code block's copy button.
+ * code block's copy and download buttons.
  */
 export default function Markdown({ children }: { children: string }) {
   return (
     <Box
       css={{
         '& > *:first-of-type': { marginTop: 0 },
-        // A code block is wrapped for its copy button, so the reset above lands
+        // A code block is wrapped for its buttons, so the reset above lands
         // on the wrapper rather than on the `pre` that carries the margin.
         '& > *:first-of-type > pre': { marginTop: 0 },
         '& > *:last-child': { marginBottom: 0 },
@@ -138,8 +183,9 @@ export default function Markdown({ children }: { children: string }) {
         '& pre': {
           backgroundColor: 'rgba(255, 255, 255, 0.06)',
           padding: '0.75rem 1rem',
-          // Room for the copy button so a long first line does not run under it.
-          paddingRight: '2.75rem',
+          // Room for the copy and download buttons so a long first line does
+          // not run under them.
+          paddingRight: '5rem',
           borderRadius: '0.5rem',
           overflowX: 'auto',
           margin: '0.75rem 0',

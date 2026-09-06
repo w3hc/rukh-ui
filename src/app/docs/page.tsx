@@ -38,6 +38,12 @@ const firstResponse = `{
   }
 }`
 
+const withFileRequest = `curl '${API_URL}/ask' \\
+  -H 'Content-Type: multipart/form-data' \\
+  -F 'message=Rewrite column J' \\
+  -F 'context=${EXAMPLE_CONTEXT}' \\
+  -F 'file=@export.csv'`
+
 const followUpRequest = `curl '${API_URL}/ask' \\
   -H 'Content-Type: multipart/form-data' \\
   -F 'message=How big was it supposed to be?' \\
@@ -191,6 +197,28 @@ export default function DocsPage() {
           Store the <code>sessionId</code> per visitor — in a cookie, in <code>localStorage</code>,
           or alongside your own conversation record. Omit it and you start a fresh conversation with
           no memory of the previous one.
+        </Text>
+      </Section>
+
+      <Section id="files" title="Sending a file with a question">
+        <Text color="gray.300">
+          A question can carry a file: a markdown document or a CSV export, up to 5 MB. On a
+          context&apos;s page, drop it anywhere on the window or use the paperclip beside{' '}
+          <strong>Send</strong>; over HTTP it is the <code>file</code> part of the same request:
+        </Text>
+        <Snippet code={withFileRequest} label="request with a file" />
+        <Text color="gray.300">
+          The file is read for that one question and then dropped — it is not stored, and not
+          remembered on the next question, so send it again if the next question is about it too. A
+          spreadsheet export saved by Excel on Windows is decoded correctly even though it is not
+          UTF-8, and whatever the file says is treated as material to work on, never as
+          instructions.
+        </Text>
+        <Text color="gray.400" fontSize="sm">
+          When an answer comes back as a code block — a column to paste into a spreadsheet, a config
+          to save — the block carries a download button next to the copy button. The language on the
+          block decides the extension, so an answer fenced as <code>csv</code> saves as{' '}
+          <code>rukh-answer.csv</code>, ready to open.
         </Text>
       </Section>
 
