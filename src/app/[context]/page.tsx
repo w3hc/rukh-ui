@@ -12,6 +12,7 @@ import Markdown from '@/components/Markdown'
 import Spinner from '@/components/Spinner'
 import { useW3PK } from '@/context/W3PK'
 import { usePageHeader } from '@/context/PageHeader'
+import { useStoredPreference } from '@/hooks/useStoredPreference'
 import { brandColors } from '@/theme'
 import { ApiError, ask, askStream, ContextSummary, listContexts, RukhModel } from '@/utils/api'
 
@@ -27,6 +28,15 @@ const MODELS: { value: RukhModel; label: string }[] = [
   { value: 'openai', label: 'OpenAI' },
 ]
 
+// The composer's two settings are remembered across visits, the way the
+// language selection is (`src/context/LanguageContext.tsx`). They live in
+// `localStorage` rather than in `useState`, so nothing has to be copied from
+// one to the other on mount.
+const MODEL_STORAGE_KEY = 'preferredModel'
+const STREAM_STORAGE_KEY = 'streamEnabled'
+
+const isRukhModel = (value: string): value is RukhModel => MODELS.some(m => m.value === value)
+
 export default function ContextPage() {
   const params = useParams<{ context: string }>()
   const contextName = params.context
@@ -36,8 +46,6 @@ export default function ContextPage() {
   const [address, setAddress] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
-  const [model, setModel] = useState<RukhModel>('anthropic')
-  const [stream, setStream] = useState(true)
   // The answer as it arrives, rendered in place of the "thinking" spinner.
   // null when nothing is streaming.
   const [streamingText, setStreamingText] = useState<string | null>(null)
@@ -48,6 +56,13 @@ export default function ContextPage() {
   const [isSending, setIsSending] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Both fall back to their defaults until the stored value is read, which is
+  // after hydration.
+  const [storedModel, setStoredModel] = useStoredPreference(MODEL_STORAGE_KEY)
+  const model: RukhModel = storedModel && isRukhModel(storedModel) ? storedModel : 'anthropic'
+  const [storedStream, setStoredStream] = useStoredPreference(STREAM_STORAGE_KEY)
+  const stream = storedStream === null ? true : storedStream === 'true'
 
   useEffect(() => {
     let cancelled = false
@@ -256,7 +271,7 @@ export default function ContextPage() {
             <Box w="100px">
               <Select
                 value={model}
-                onChange={e => setModel(e.target.value as RukhModel)}
+                onChange={e => setStoredModel(e.target.value)}
                 aria-label="Model"
                 bg="transparent"
                 borderColor="whiteAlpha.200"
@@ -276,7 +291,7 @@ export default function ContextPage() {
             </Box>
             <Checkbox
               checked={stream}
-              onCheckedChange={e => setStream(!!e.checked)}
+              onCheckedChange={e => setStoredStream(String(!!e.checked))}
               size="xs"
               colorPalette="purple"
             >
