@@ -55,11 +55,28 @@ async function requestText(path: string, init?: RequestInit): Promise<string> {
 
 export type RukhModel = 'mistral' | 'anthropic' | 'openai'
 
+/**
+ * What `POST /ask` accepts as its optional `file` part. Mirrors the Rukh API's
+ * `FileValidator` (`src/validators/file.validator.ts`), which is the source of
+ * truth and enforces both whatever the client does. These two are a copy, kept
+ * so a rejection costs no round trip and so the wording, the `accept` attribute
+ * and the check all derive from one place; they will drift if the validator
+ * changes.
+ */
+export const ACCEPTED_UPLOAD_EXTENSIONS = ['.md', '.csv'] as const
+export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+
 export interface AskParams {
   message: string
   model?: RukhModel
   context?: string
   sessionId?: string
+  /**
+   * A file to send with the message. The API decodes it and appends it to the
+   * system prompt for that one call; it is not echoed back and not remembered
+   * across turns.
+   */
+  file?: File
 }
 
 export interface UsageDto {
@@ -94,6 +111,7 @@ function askForm(params: AskParams): FormData {
   if (params.model) form.set('model', params.model)
   if (params.context) form.set('context', params.context)
   if (params.sessionId) form.set('sessionId', params.sessionId)
+  if (params.file) form.set('file', params.file)
   return form
 }
 
