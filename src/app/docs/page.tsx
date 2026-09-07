@@ -214,12 +214,6 @@ export default function DocsPage() {
           UTF-8, and whatever the file says is treated as material to work on, never as
           instructions.
         </Text>
-        <Text color="gray.400" fontSize="sm">
-          When an answer comes back as a code block — a column to paste into a spreadsheet, a config
-          to save — the block carries a download button next to the copy button. The language on the
-          block decides the extension, so an answer fenced as <code>csv</code> saves as{' '}
-          <code>rukh-answer.csv</code>, ready to open.
-        </Text>
       </Section>
 
       <Section id="contact" title="Need a hand?">
