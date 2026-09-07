@@ -40,28 +40,28 @@ function CodeBlock({ children, node, ...props }: ComponentPropsWithoutRef<'pre'>
   }
 
   return (
-    <Box position="relative">
+    <Box>
       <pre ref={ref} {...props}>
         {children}
       </pre>
-      <IconButton
-        aria-label={copied ? 'Copied' : 'Copy to clipboard'}
-        size="sm"
-        variant="solid"
-        // The brand purple is dark, so it only reads against a light ground:
-        // a near-white chip, not the block's own near-black surface.
-        bg="whiteAlpha.900"
-        color={brandColors.primary}
-        position="absolute"
-        top={2}
-        right={2}
-        boxShadow="sm"
-        transition="background 0.15s"
-        _hover={{ bg: 'white' }}
-        onClick={handleCopy}
-      >
-        {copied ? <FiCheck /> : <FiCopy />}
-      </IconButton>
+      {/* Below the block rather than over it: the button never covers code, and
+          a long first line needs no padding carved out for it. */}
+      <Box display="flex" justifyContent="flex-end" marginTop="0.75rem" marginBottom="0.75rem">
+        <IconButton
+          aria-label={copied ? 'Copied' : 'Copy to clipboard'}
+          size="xs"
+          variant="outline"
+          // Picks up the block's own blue border, so the pair reads as one unit.
+          color={brandColors.accent}
+          borderColor={brandColors.accent}
+          bg="transparent"
+          transition="background 0.15s"
+          _hover={{ bg: 'rgba(69, 162, 248, 0.12)' }}
+          onClick={handleCopy}
+        >
+          {copied ? <FiCheck /> : <FiCopy />}
+        </IconButton>
+      </Box>
     </Box>
   )
 }
@@ -137,12 +137,18 @@ export default function Markdown({ children }: { children: string }) {
         },
         '& pre': {
           backgroundColor: 'rgba(255, 255, 255, 0.06)',
+          // Longhand, not the `border` shorthand: Chakra's preflight sets
+          // `border-style: solid` on `*`, and dashes are what survives it
+          // legibly at 1px — `dotted` this thin reads as a faded solid line.
+          borderWidth: '1px',
+          borderStyle: 'dashed',
+          borderColor: brandColors.accent,
           padding: '0.75rem 1rem',
-          // Room for the copy button so a long first line does not run under it.
-          paddingRight: '2.75rem',
           borderRadius: '0.5rem',
           overflowX: 'auto',
-          margin: '0.75rem 0',
+          // No bottom margin: the copy button sits under the block and carries
+          // the gap to whatever follows.
+          margin: '0.75rem 0 0',
         },
         '& pre code': { backgroundColor: 'transparent', padding: 0 },
         '& table': { width: '100%', marginBottom: '0.75rem', borderCollapse: 'collapse' },
