@@ -99,6 +99,10 @@ export default function ContextPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  // Auto-scroll during streaming should not fight a user who scrolled up to
+  // reread earlier messages, so it only kicks in while they're near the
+  // bottom already.
+  const isNearBottomRef = useRef(true)
 
   // Both fall back to their defaults until the stored value is read, which is
   // after hydration.
@@ -153,6 +157,17 @@ export default function ContextPage() {
   usePageHeader(context ? context.name : null, isCreator)
 
   useEffect(() => {
+    const handleScroll = () => {
+      const distanceFromBottom =
+        document.documentElement.scrollHeight - window.scrollY - window.innerHeight
+      isNearBottomRef.current = distanceFromBottom < 120
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    if (!isNearBottomRef.current) return
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingText, thinkingText])
 
@@ -220,6 +235,7 @@ export default function ContextPage() {
     const message = input.trim() || file?.name || ''
     if (!message || isSending) return
     const attachment = file ? { name: file.name, size: file.size } : undefined
+    isNearBottomRef.current = true
     setMessages(prev => [...prev, { role: 'user', content: message, attachment }])
     setInput('')
     setIsSending(true)
