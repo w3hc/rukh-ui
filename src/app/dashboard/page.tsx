@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Box, CloseButton, Flex, Heading, HStack, SimpleGrid, Text, VStack } from '@chakra-ui/react'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/ui/icon-button'
@@ -45,6 +46,7 @@ interface DeleteState {
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { isAuthenticated, signSiwe } = useW3PK()
   const [contexts, setContexts] = useState<RukhContext[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -96,11 +98,6 @@ export default function DashboardPage() {
         },
         signSiwe
       )
-      setContexts(prev =>
-        [...prev, { name, description: newContextForm.description.trim() }].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        )
-      )
       toaster.create({
         title: 'Context created',
         description: name,
@@ -108,6 +105,7 @@ export default function DashboardPage() {
         duration: 4000,
       })
       setNewContextForm(null)
+      router.push(`/${name}/edit`)
     } catch (err) {
       toaster.create({
         title: 'Could not create context',
