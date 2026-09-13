@@ -9,7 +9,7 @@ import { IconButton } from '@/components/ui/icon-button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { toaster } from '@/components/ui/toaster'
-import { FiPaperclip, FiX } from 'react-icons/fi'
+import { FiDownload, FiPaperclip, FiX } from 'react-icons/fi'
 import Link from 'next/link'
 import Markdown from '@/components/Markdown'
 import Spinner from '@/components/Spinner'
@@ -52,6 +52,8 @@ const STREAM_STORAGE_KEY = 'streamEnabled'
 const isRukhModel = (value: string): value is RukhModel => MODELS.some(m => m.value === value)
 
 const ACCEPTED_UPLOADS = ACCEPTED_UPLOAD_EXTENSIONS.join(', ')
+
+const RECAP_MESSAGE = 'Recap everything in markdown format (in a code block).'
 
 /**
  * Mirrors the API's `FileValidator`, so a file it would reject never costs a
@@ -236,12 +238,12 @@ export default function ContextPage() {
     }
   }, [attach])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent, override?: string) => {
     e.preventDefault()
     // A file on its own is a valid message. `AskDto.message` is not nullable,
     // so an empty composer sends the filename — enough for the model to know
     // what arrived, and it reads sensibly in the transcript.
-    const message = input.trim() || file?.name || ''
+    const message = override ?? (input.trim() || file?.name || '')
     if (!message || isSending) return
     const attachment = file ? { name: file.name, size: file.size } : undefined
     forceScrollRef.current = true
@@ -278,6 +280,10 @@ export default function ContextPage() {
       setThinkingText(null)
       setIsSending(false)
     }
+  }
+
+  const sendRecap = (e: React.MouseEvent) => {
+    void handleSubmit(e, RECAP_MESSAGE)
   }
 
   // Enter sends, Shift+Enter adds a line. A textarea would otherwise swallow
@@ -487,6 +493,18 @@ export default function ContextPage() {
               onClick={() => fileInputRef.current?.click()}
             >
               <FiPaperclip />
+            </IconButton>
+            <IconButton
+              aria-label="Download a recap"
+              variant="outline"
+              size="lg"
+              borderColor="whiteAlpha.300"
+              color="gray.400"
+              _hover={{ color: 'white', borderColor: 'whiteAlpha.500' }}
+              disabled={isSending}
+              onClick={sendRecap}
+            >
+              <FiDownload />
             </IconButton>
             <Button
               type="submit"
