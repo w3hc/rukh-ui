@@ -273,6 +273,8 @@ export interface ContextSummary {
   /** Wallet address that created the context; only it may edit the context. */
   creatorAddress?: string
   creatorName?: string
+  /** Set when the context forces a model on every /ask against it. */
+  model?: ContextModel
 }
 
 /**
