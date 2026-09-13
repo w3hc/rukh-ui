@@ -473,27 +473,29 @@ export default function ContextPage() {
             </Button>
           </HStack>
           <HStack gap={3} mt={1.5} align="center">
-            <Box w="100px">
-              <Select
-                value={model}
-                onChange={e => setStoredModel(e.target.value)}
-                aria-label="Model"
-                bg="transparent"
-                borderColor="whiteAlpha.200"
-                color="gray.500"
-                fontSize="xs"
-                pl={2}
-                pr={5}
-                py={0.5}
-                h="auto"
-              >
-                {MODELS.map(m => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </Select>
-            </Box>
+            {!context?.model && (
+              <Box w="100px">
+                <Select
+                  value={model}
+                  onChange={e => setStoredModel(e.target.value)}
+                  aria-label="Model"
+                  bg="transparent"
+                  borderColor="whiteAlpha.200"
+                  color="gray.500"
+                  fontSize="xs"
+                  pl={2}
+                  pr={5}
+                  py={0.5}
+                  h="auto"
+                >
+                  {MODELS.map(m => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+            )}
             <Checkbox
               checked={stream}
               onCheckedChange={e => setStoredStream(String(!!e.checked))}
