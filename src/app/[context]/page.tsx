@@ -99,6 +99,15 @@ export default function ContextPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  // Auto-scroll during streaming should not fight a user who scrolled up to
+  // reread earlier messages, so it only kicks in while they're near the
+  // bottom already. An IntersectionObserver (rather than raw scroll math)
+  // keeps this correct across resizes too, e.g. a mobile keyboard closing.
+  const isNearBottomRef = useRef(true)
+  // Sending a message should always jump to the bottom, even if the observer
+  // hasn't re-fired yet — a plain scroll listener could clobber a ref set
+  // just before the message is appended, this one can't.
+  const forceScrollRef = useRef(false)
 
   // Both fall back to their defaults until the stored value is read, which is
   // after hydration.
@@ -153,6 +162,21 @@ export default function ContextPage() {
   usePageHeader(context ? context.name : null, isCreator)
 
   useEffect(() => {
+    const sentinel = messagesEndRef.current
+    if (!sentinel) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isNearBottomRef.current = entry.isIntersecting
+      },
+      { rootMargin: '0px 0px 120px 0px' }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isNearBottomRef.current && !forceScrollRef.current) return
+    forceScrollRef.current = false
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingText, thinkingText])
 
@@ -220,6 +244,7 @@ export default function ContextPage() {
     const message = input.trim() || file?.name || ''
     if (!message || isSending) return
     const attachment = file ? { name: file.name, size: file.size } : undefined
+    forceScrollRef.current = true
     setMessages(prev => [...prev, { role: 'user', content: message, attachment }])
     setInput('')
     setIsSending(true)
