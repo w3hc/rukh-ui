@@ -364,9 +364,12 @@ export default function ContextPage() {
                 color="gray.500"
                 fontSize="sm"
               >
-                <Text mb={1} fontSize="xs" textTransform="uppercase" letterSpacing="wide">
-                  Thinking
-                </Text>
+                <HStack mb={1} gap={2}>
+                  <Spinner size="xs" />
+                  <Text fontSize="xs" textTransform="uppercase" letterSpacing="wide">
+                    Thinking
+                  </Text>
+                </HStack>
                 <Text whiteSpace="pre-wrap">{thinkingText}</Text>
               </Box>
             ) : (
