@@ -53,7 +53,7 @@ async function requestText(path: string, init?: RequestInit): Promise<string> {
 // Ask
 // ---------------------------------------------------------------------------
 
-export type RukhModel = 'mistral' | 'anthropic' | 'openai'
+export type RukhModel = 'mistral' | 'anthropic' | 'openai' | 'deepseek'
 
 /**
  * What `POST /ask` accepts as its optional `file` part. Mirrors the Rukh API's
@@ -325,7 +325,7 @@ export function listContexts(): Promise<ContextSummary[]> {
  * (`src/dto/context.dto.ts`); it is a superset of `RukhModel`, since a context
  * can also force the web-search variant.
  */
-export type ContextModel = 'mistral' | 'anthropic' | 'openai' | 'anthropic-web-search'
+export type ContextModel = 'mistral' | 'anthropic' | 'openai' | 'deepseek' | 'anthropic-web-search'
 
 export async function createContext(
   input: {
