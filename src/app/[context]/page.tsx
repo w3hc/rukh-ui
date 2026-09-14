@@ -566,6 +566,7 @@ export default function ContextPage() {
                     if (context?.model) {
                       setPinnedModelOverride(next)
                     } else {
+                      setPinnedModelOverride(null)
                       setStoredModel(next)
                     }
                   }
