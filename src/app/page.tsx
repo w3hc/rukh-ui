@@ -64,7 +64,7 @@ const pillars: Pillar[] = [
     icon: FiSliders,
     eyebrow: 'Your call',
     title: 'Let your users choose the model',
-    body: 'Claude, Mistral, OpenAI — the choice belongs to the person asking, not to the platform. And offering all three costs you nothing: Rukh holds the provider accounts, so you hold no keys at all.',
+    body: 'Claude, Mistral, OpenAI, DeepSeek — the choice belongs to the person asking, not to the platform. And offering all four costs you nothing: Rukh holds the provider accounts, so you hold no keys at all.',
     points: ['One call, every provider', 'No provider account, no keys to rotate'],
   },
   {

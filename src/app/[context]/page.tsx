@@ -40,6 +40,7 @@ const MODELS: { value: RukhModel; label: string }[] = [
   { value: 'anthropic', label: 'Anthropic' },
   { value: 'mistral', label: 'Mistral' },
   { value: 'openai', label: 'OpenAI' },
+  { value: 'deepseek', label: 'DeepSeek' },
 ]
 
 // The composer's two settings are remembered across visits, the way the

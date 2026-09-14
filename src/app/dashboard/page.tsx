@@ -38,6 +38,7 @@ const CONTEXT_MODELS: { value: ContextModel; label: string }[] = [
   { value: 'mistral', label: 'Mistral' },
   { value: 'anthropic', label: 'Anthropic' },
   { value: 'openai', label: 'OpenAI' },
+  { value: 'deepseek', label: 'DeepSeek' },
   { value: 'anthropic-web-search', label: 'Anthropic (web search)' },
 ]
 
