@@ -68,7 +68,12 @@ export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 export interface AskParams {
   message: string
-  model?: RukhModel
+  /**
+   * `ContextModel` rather than `RukhModel`: normally one of the four, but a
+   * context pinned to `anthropic-web-search` can echo that value back here
+   * too (see the composer's pinned-model select in `/[context]/page.tsx`).
+   */
+  model?: ContextModel
   context?: string
   sessionId?: string
   /**

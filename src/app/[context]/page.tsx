@@ -22,6 +22,7 @@ import {
   ApiError,
   ask,
   askStream,
+  ContextModel,
   ContextSummary,
   listContexts,
   MAX_UPLOAD_BYTES,
@@ -42,6 +43,12 @@ const MODELS: { value: RukhModel; label: string }[] = [
   { value: 'openai', label: 'OpenAI' },
   { value: 'deepseek', label: 'DeepSeek' },
 ]
+
+// Not offered as a normal choice — it incurs per-search fees and should only
+// run when a context is explicitly pinned to it — but the select still needs
+// to display and preserve the pin rather than silently show something else.
+const WEB_SEARCH_MODEL = 'anthropic-web-search'
+const WEB_SEARCH_LABEL = 'Anthropic (web search)'
 
 // The composer's two settings are remembered across visits, the way the
 // language selection is (`src/context/LanguageContext.tsx`). They live in
@@ -122,8 +129,10 @@ export default function ContextPage() {
   // A context that pins a model picks the select on load, but the pin is
   // enforced server-side regardless of what's selected here — changing it is
   // a per-visit choice, not written to the shared `preferredModel` storage.
-  const [pinnedModelOverride, setPinnedModelOverride] = useState<RukhModel | null>(null)
-  const selectedModel = pinnedModelOverride ?? model
+  // Reset (not just set) on every fetch, so a stale pin from a previous
+  // context can't survive a client-side navigation to an unpinned one.
+  const [pinnedModelOverride, setPinnedModelOverride] = useState<ContextModel | null>(null)
+  const selectedModel: ContextModel = pinnedModelOverride ?? model
 
   useEffect(() => {
     let cancelled = false
@@ -132,7 +141,7 @@ export default function ContextPage() {
         if (cancelled) return
         const found = all.find(c => c.name === contextName) ?? null
         setContext(found)
-        if (found?.model && isRukhModel(found.model)) setPinnedModelOverride(found.model)
+        setPinnedModelOverride(found?.model ?? null)
       })
       .catch(() => {
         if (!cancelled) setContext(null)
@@ -539,10 +548,9 @@ export default function ContextPage() {
                 value={selectedModel}
                 onChange={e => {
                   const next = e.target.value
-                  if (!isRukhModel(next)) return
                   if (context?.model) {
-                    setPinnedModelOverride(next)
-                  } else {
+                    if (isRukhModel(next) || next === WEB_SEARCH_MODEL) setPinnedModelOverride(next)
+                  } else if (isRukhModel(next)) {
                     setStoredModel(next)
                   }
                 }}
@@ -561,6 +569,9 @@ export default function ContextPage() {
                     {m.label}
                   </option>
                 ))}
+                {context?.model === WEB_SEARCH_MODEL && (
+                  <option value={WEB_SEARCH_MODEL}>{WEB_SEARCH_LABEL}</option>
+                )}
               </Select>
             </Box>
             <Checkbox
