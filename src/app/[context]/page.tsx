@@ -119,12 +119,20 @@ export default function ContextPage() {
   const [storedStream, setStoredStream] = useStoredPreference(STREAM_STORAGE_KEY)
   const stream = storedStream === null ? true : storedStream === 'true'
 
+  // A context that pins a model picks the select on load, but the pin is
+  // enforced server-side regardless of what's selected here — changing it is
+  // a per-visit choice, not written to the shared `preferredModel` storage.
+  const [pinnedModelOverride, setPinnedModelOverride] = useState<RukhModel | null>(null)
+  const selectedModel = pinnedModelOverride ?? model
+
   useEffect(() => {
     let cancelled = false
     listContexts()
       .then(all => {
         if (cancelled) return
-        setContext(all.find(c => c.name === contextName) ?? null)
+        const found = all.find(c => c.name === contextName) ?? null
+        setContext(found)
+        if (found?.model && isRukhModel(found.model)) setPinnedModelOverride(found.model)
       })
       .catch(() => {
         if (!cancelled) setContext(null)
@@ -253,7 +261,13 @@ export default function ContextPage() {
     setIsSending(true)
     if (stream) setStreamingText('')
     setThinkingText(null)
-    const params = { message, model, context: contextName, sessionId, file: file ?? undefined }
+    const params = {
+      message,
+      model: selectedModel,
+      context: contextName,
+      sessionId,
+      file: file ?? undefined,
+    }
     setFile(null)
     try {
       // Both paths end on the same payload: streaming only changes how much of
@@ -520,29 +534,35 @@ export default function ContextPage() {
             </Button>
           </HStack>
           <HStack gap={3} mt={1.5} align="center">
-            {!context?.model && (
-              <Box w="100px">
-                <Select
-                  value={model}
-                  onChange={e => setStoredModel(e.target.value)}
-                  aria-label="Model"
-                  bg="transparent"
-                  borderColor="whiteAlpha.200"
-                  color="gray.500"
-                  fontSize="xs"
-                  pl={2}
-                  pr={5}
-                  py={0.5}
-                  h="auto"
-                >
-                  {MODELS.map(m => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
-            )}
+            <Box w="100px">
+              <Select
+                value={selectedModel}
+                onChange={e => {
+                  const next = e.target.value
+                  if (!isRukhModel(next)) return
+                  if (context?.model) {
+                    setPinnedModelOverride(next)
+                  } else {
+                    setStoredModel(next)
+                  }
+                }}
+                aria-label="Model"
+                bg="transparent"
+                borderColor="whiteAlpha.200"
+                color="gray.500"
+                fontSize="xs"
+                pl={2}
+                pr={5}
+                py={0.5}
+                h="auto"
+              >
+                {MODELS.map(m => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </Select>
+            </Box>
             <Checkbox
               checked={stream}
               onCheckedChange={e => setStoredStream(String(!!e.checked))}
