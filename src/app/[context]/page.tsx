@@ -22,6 +22,7 @@ import {
   ApiError,
   ask,
   askStream,
+  ContextModel,
   ContextSummary,
   listContexts,
   MAX_UPLOAD_BYTES,
@@ -42,6 +43,12 @@ const MODELS: { value: RukhModel; label: string }[] = [
   { value: 'openai', label: 'OpenAI' },
   { value: 'deepseek', label: 'DeepSeek' },
 ]
+
+// Not offered as a normal choice — it incurs per-search fees and should only
+// run when a context is explicitly pinned to it — but the select still needs
+// to display and preserve the pin rather than silently show something else.
+const WEB_SEARCH_MODEL = 'anthropic-web-search'
+const WEB_SEARCH_LABEL = 'Anthropic (web search)'
 
 // The composer's two settings are remembered across visits, the way the
 // language selection is (`src/context/LanguageContext.tsx`). They live in
@@ -119,15 +126,37 @@ export default function ContextPage() {
   const [storedStream, setStoredStream] = useStoredPreference(STREAM_STORAGE_KEY)
   const stream = storedStream === null ? true : storedStream === 'true'
 
+  // A context that pins a model picks the select on load, but the pin is
+  // enforced server-side regardless of what's selected here — changing it is
+  // a per-visit choice, not written to the shared `preferredModel` storage.
+  const [pinnedModelOverride, setPinnedModelOverride] = useState<ContextModel | null>(null)
+  const selectedModel: ContextModel = pinnedModelOverride ?? model
+
+  // A client-side navigation between two context pages reuses this component
+  // rather than remounting it, so without this the previous context's
+  // (possibly pinned) data would stay rendered and interactive for the async
+  // gap until the new context's fetch resolves. Resetting during render
+  // rather than in an effect avoids that gap entirely.
+  const [loadedContextName, setLoadedContextName] = useState(contextName)
+  if (contextName !== loadedContextName) {
+    setLoadedContextName(contextName)
+    setContext(undefined)
+    setPinnedModelOverride(null)
+  }
+
   useEffect(() => {
     let cancelled = false
     listContexts()
       .then(all => {
         if (cancelled) return
-        setContext(all.find(c => c.name === contextName) ?? null)
+        const found = all.find(c => c.name === contextName) ?? null
+        setContext(found)
+        setPinnedModelOverride(found?.model ?? null)
       })
       .catch(() => {
-        if (!cancelled) setContext(null)
+        if (cancelled) return
+        setContext(null)
+        setPinnedModelOverride(null)
       })
     return () => {
       cancelled = true
@@ -253,7 +282,13 @@ export default function ContextPage() {
     setIsSending(true)
     if (stream) setStreamingText('')
     setThinkingText(null)
-    const params = { message, model, context: contextName, sessionId, file: file ?? undefined }
+    const params = {
+      message,
+      model: selectedModel,
+      context: contextName,
+      sessionId,
+      file: file ?? undefined,
+    }
     setFile(null)
     try {
       // Both paths end on the same payload: streaming only changes how much of
@@ -520,29 +555,37 @@ export default function ContextPage() {
             </Button>
           </HStack>
           <HStack gap={3} mt={1.5} align="center">
-            {!context?.model && (
-              <Box w="100px">
-                <Select
-                  value={model}
-                  onChange={e => setStoredModel(e.target.value)}
-                  aria-label="Model"
-                  bg="transparent"
-                  borderColor="whiteAlpha.200"
-                  color="gray.500"
-                  fontSize="xs"
-                  pl={2}
-                  pr={5}
-                  py={0.5}
-                  h="auto"
-                >
-                  {MODELS.map(m => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
-            )}
+            <Box w="100px">
+              <Select
+                value={selectedModel}
+                onChange={e => {
+                  const next = e.target.value
+                  if (context?.model) {
+                    if (isRukhModel(next) || next === WEB_SEARCH_MODEL) setPinnedModelOverride(next)
+                  } else if (isRukhModel(next)) {
+                    setStoredModel(next)
+                  }
+                }}
+                aria-label="Model"
+                bg="transparent"
+                borderColor="whiteAlpha.200"
+                color="gray.500"
+                fontSize="xs"
+                pl={2}
+                pr={5}
+                py={0.5}
+                h="auto"
+              >
+                {MODELS.map(m => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+                {context?.model === WEB_SEARCH_MODEL && (
+                  <option value={WEB_SEARCH_MODEL}>{WEB_SEARCH_LABEL}</option>
+                )}
+              </Select>
+            </Box>
             <Checkbox
               checked={stream}
               onCheckedChange={e => setStoredStream(String(!!e.checked))}
