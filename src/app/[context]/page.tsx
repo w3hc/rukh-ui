@@ -431,13 +431,13 @@ export default function ContextPage() {
                 color="gray.500"
                 fontSize="sm"
               >
-                <HStack mb={1} gap={2}>
-                  <Spinner size="xs" />
-                  <Text fontSize="xs" textTransform="uppercase" letterSpacing="wide">
-                    Thinking
-                  </Text>
-                </HStack>
+                <Text fontSize="xs" textTransform="uppercase" letterSpacing="wide" mb={1}>
+                  Thinking
+                </Text>
                 <Text whiteSpace="pre-wrap">{thinkingText}</Text>
+                <Box mt={2}>
+                  <Spinner size="xs" />
+                </Box>
               </Box>
             ) : (
               <Box alignSelf="flex-start">
