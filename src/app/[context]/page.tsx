@@ -144,7 +144,9 @@ export default function ContextPage() {
         setPinnedModelOverride(found?.model ?? null)
       })
       .catch(() => {
-        if (!cancelled) setContext(null)
+        if (cancelled) return
+        setContext(null)
+        setPinnedModelOverride(null)
       })
     return () => {
       cancelled = true
