@@ -44,9 +44,9 @@ const MODELS: { value: RukhModel; label: string }[] = [
   { value: 'deepseek', label: 'DeepSeek' },
 ]
 
-// Not offered as a normal choice — it incurs per-search fees and should only
-// run when a context is explicitly pinned to it — but the select still needs
-// to display and preserve the pin rather than silently show something else.
+// Selectable, but session-only: it incurs per-search fees, so picking it
+// doesn't get written to `localStorage` like the other models — it resets
+// on the next visit unless the context itself is pinned to it.
 const WEB_SEARCH_MODEL = 'anthropic-web-search'
 const WEB_SEARCH_LABEL = 'Anthropic (web search)'
 
@@ -431,13 +431,13 @@ export default function ContextPage() {
                 color="gray.500"
                 fontSize="sm"
               >
-                <HStack mb={1} gap={2}>
-                  <Spinner size="xs" />
-                  <Text fontSize="xs" textTransform="uppercase" letterSpacing="wide">
-                    Thinking
-                  </Text>
-                </HStack>
+                <Text fontSize="xs" textTransform="uppercase" letterSpacing="wide" mb={1}>
+                  Thinking
+                </Text>
                 <Text whiteSpace="pre-wrap">{thinkingText}</Text>
+                <Box mt={2}>
+                  <Spinner size="xs" />
+                </Box>
               </Box>
             ) : (
               <Box alignSelf="flex-start">
@@ -560,10 +560,15 @@ export default function ContextPage() {
                 value={selectedModel}
                 onChange={e => {
                   const next = e.target.value
-                  if (context?.model) {
-                    if (isRukhModel(next) || next === WEB_SEARCH_MODEL) setPinnedModelOverride(next)
+                  if (next === WEB_SEARCH_MODEL) {
+                    setPinnedModelOverride(next)
                   } else if (isRukhModel(next)) {
-                    setStoredModel(next)
+                    if (context?.model) {
+                      setPinnedModelOverride(next)
+                    } else {
+                      setPinnedModelOverride(null)
+                      setStoredModel(next)
+                    }
                   }
                 }}
                 aria-label="Model"
@@ -581,9 +586,7 @@ export default function ContextPage() {
                     {m.label}
                   </option>
                 ))}
-                {context?.model === WEB_SEARCH_MODEL && (
-                  <option value={WEB_SEARCH_MODEL}>{WEB_SEARCH_LABEL}</option>
-                )}
+                <option value={WEB_SEARCH_MODEL}>{WEB_SEARCH_LABEL}</option>
               </Select>
             </Box>
             <Checkbox
