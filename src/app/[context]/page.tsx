@@ -129,10 +129,20 @@ export default function ContextPage() {
   // A context that pins a model picks the select on load, but the pin is
   // enforced server-side regardless of what's selected here — changing it is
   // a per-visit choice, not written to the shared `preferredModel` storage.
-  // Reset (not just set) on every fetch, so a stale pin from a previous
-  // context can't survive a client-side navigation to an unpinned one.
   const [pinnedModelOverride, setPinnedModelOverride] = useState<ContextModel | null>(null)
   const selectedModel: ContextModel = pinnedModelOverride ?? model
+
+  // A client-side navigation between two context pages reuses this component
+  // rather than remounting it, so without this the previous context's
+  // (possibly pinned) data would stay rendered and interactive for the async
+  // gap until the new context's fetch resolves. Resetting during render
+  // rather than in an effect avoids that gap entirely.
+  const [loadedContextName, setLoadedContextName] = useState(contextName)
+  if (contextName !== loadedContextName) {
+    setLoadedContextName(contextName)
+    setContext(undefined)
+    setPinnedModelOverride(null)
+  }
 
   useEffect(() => {
     let cancelled = false
