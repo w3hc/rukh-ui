@@ -226,17 +226,55 @@ const REGISTRATION_TIMEOUT_MS = 45000 // 45 seconds
 const SESSIONS_DB_NAME = 'Web3PasskeyPersistentSessions'
 const SESSIONS_STORE_NAME = 'sessions'
 
+/**
+ * w3pk wraps failures in its own error classes, keeping the real reason in
+ * `originalError` (e.g. `WalletError("Failed to get address", <cause>)`).
+ * Walking that chain gives the errors the wrappers hide, outermost first.
+ */
+export function unwrapErrorChain(error: unknown): unknown[] {
+  const chain: unknown[] = []
+  let current = error
+  while (current && !chain.includes(current)) {
+    chain.push(current)
+    current =
+      typeof current === 'object' && 'originalError' in current
+        ? (current as { originalError?: unknown }).originalError
+        : undefined
+  }
+  return chain
+}
+
+/** The deepest message of the chain: the cause rather than the wrapper. */
+export function describeError(error: unknown): string | undefined {
+  const messages = unwrapErrorChain(error)
+    .map(link => (link instanceof Error ? link.message : undefined))
+    .filter((message): message is string => Boolean(message))
+  return messages.length > 0 ? messages[messages.length - 1] : undefined
+}
+
+/** Console trace of the full chain, so the browser shows what the toasts can't. */
+function logErrorChain(label: string, error: unknown): void {
+  const chain = unwrapErrorChain(error)
+  console.error(
+    `[W3PK] ${label}:`,
+    ...chain.map(link => (link instanceof Error ? `${link.name}: ${link.message}` : String(link))),
+    { chain }
+  )
+}
+
 export function isUserCancelledError(error: unknown): boolean {
-  if (error && typeof error === 'object' && 'name' in error && 'message' in error) {
-    const err = error as { name: string; message: string }
+  return unwrapErrorChain(error).some(link => {
+    if (!link || typeof link !== 'object' || !('name' in link) || !('message' in link)) {
+      return false
+    }
+    const err = link as { name: string; message: string }
     return (
       err.name === 'NotAllowedError' ||
       err.message.includes('NotAllowedError') ||
       err.message.includes('timed out') ||
       err.message.includes('not allowed')
     )
-  }
-  return false
+  })
 }
 
 export function isRequestPendingError(error: unknown): boolean {
@@ -362,6 +400,9 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       createWeb3Passkey({
         stealthAddresses: {},
         onAuthStateChanged: handleAuthStateChanged,
+        // The SDK reports every internal failure here before wrapping it, so
+        // this is the only place the unwrapped cause can be seen.
+        onError: error => logErrorChain('SDK error', error),
         sessionDuration: 24, // 24 hours session duration
         persistentSession: {
           enabled: true,
@@ -376,16 +417,22 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     [handleAuthStateChanged]
   )
 
-  // Expose w3pk instance to window for console inspection
+  // Expose w3pk instance to window for console inspection.
+  // Spreading the instance would drop everything it inherits — the SDK is a
+  // class, so its methods live on the prototype — hence a proxy object that
+  // delegates to it and only adds the standalone helpers.
   useEffect(() => {
     if (typeof window !== 'undefined' && w3pk) {
-      ;(window as any).w3pk = {
-        ...w3pk,
-        getCurrentBuildHash,
-        verifyBuildHash,
-        inspect,
-        inspectNow,
-      }
+      const extras = { getCurrentBuildHash, verifyBuildHash, inspect, inspectNow }
+      ;(window as any).w3pk = new Proxy(w3pk as object, {
+        get(target, prop) {
+          if (prop in extras) return extras[prop as keyof typeof extras]
+          // `target` as the receiver: getters and methods must run against the
+          // real instance, never the proxy, or its internals go missing.
+          const value = Reflect.get(target, prop, target)
+          return typeof value === 'function' ? value.bind(target) : value
+        },
+      })
     }
   }, [w3pk])
 
@@ -582,6 +629,8 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
 
         return result
       } catch (error) {
+        logErrorChain(errorTitle, error)
+
         if (isAuthRequiredError(error, [retryOn])) {
           try {
             await w3pk.login()
@@ -592,10 +641,15 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
 
             return result
           } catch (retryError) {
+            logErrorChain(`${errorTitle} (after re-login)`, retryError)
+
             if (!isUserCancelledError(retryError)) {
+              // The cause, when the SDK gave one, says more than the prompt:
+              // a retry that fails again is rarely about authentication.
+              const cause = describeError(retryError)
               toaster.create({
                 title: 'Authentication Required',
-                description: authPrompt,
+                description: cause ? `${authPrompt} (${cause})` : authPrompt,
                 type: 'error',
                 duration: 5000,
               })
@@ -607,7 +661,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
         if (!isUserCancelledError(error)) {
           toaster.create({
             title: errorTitle,
-            description: error instanceof Error ? error.message : fallbackMessage,
+            description: describeError(error) || fallbackMessage,
             type: 'error',
             duration: 5000,
           })
@@ -641,9 +695,10 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
 
       return result.signature
     } catch (error) {
+      logErrorChain('Signing Failed', error)
+
       if (!isUserCancelledError(error)) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to sign message with w3pk'
+        const errorMessage = describeError(error) || 'Failed to sign message with w3pk'
 
         toaster.create({
           title: 'Signing Failed',
@@ -668,6 +723,7 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     // which is NOT the same as user.ethereumAddress (that's the root wallet
     // address). getAddress() resolves the address that will actually sign.
     const address = await getAddress()
+    console.info('[W3PK] signSiwe: signing as', address, `for ${method.toUpperCase()} ${path}`)
 
     const issuedAt = new Date()
     const expirationTime = new Date(issuedAt.getTime() + SIWE_MAX_AGE_SECONDS * 1000)
