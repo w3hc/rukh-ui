@@ -15,7 +15,7 @@ import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi'
 import ContextCard from '@/components/ContextCard'
 import LoginButton from '@/components/LoginButton'
 import Spinner from '@/components/Spinner'
-import { useW3PK } from '@/context/W3PK'
+import { describeError, useW3PK } from '@/context/W3PK'
 import { brandColors } from '@/theme'
 import { RukhContext } from '@/utils/contexts'
 import {
@@ -108,9 +108,12 @@ export default function DashboardPage() {
       setNewContextForm(null)
       router.push(`/${name}/edit`)
     } catch (err) {
+      console.error('[dashboard] createContext failed:', err)
       toaster.create({
         title: 'Could not create context',
-        description: err instanceof ApiError ? err.message : undefined,
+        // Not an ApiError means it failed before the request went out —
+        // signing, most likely — so its message is the only clue there is.
+        description: describeError(err),
         type: 'error',
         duration: 4000,
       })
