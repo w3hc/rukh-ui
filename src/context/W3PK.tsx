@@ -487,7 +487,9 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
       console.log('[W3PK] Login initiated')
 
       const result = await w3pk.login()
-      const hasWallet = w3pk.isAuthenticated
+      // The SDK only starts a session when it finds the encrypted wallet on
+      // this device; the passkey alone still logs the user in without one.
+      const hasWallet = w3pk.hasActiveSession()
       const displayName = result.displayName || result.username || 'Anon'
 
       console.log('[W3PK] Login successful:', { hasWallet, displayName })
@@ -533,6 +535,12 @@ export const W3pkProvider: React.FC<W3pkProviderProps> = ({ children }) => {
     // No active session - prompt for login
     // W3PK SDK will handle session creation and management
     await w3pk.login()
+
+    // A login without a session means the wallet is missing from this device:
+    // prompting again would fail the same way.
+    if (!w3pk.hasActiveSession()) {
+      throw new Error('No wallet found on this device. Restore it from a backup or register again.')
+    }
   }, [w3pk])
 
   /**
